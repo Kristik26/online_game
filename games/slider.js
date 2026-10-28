@@ -37,7 +37,101 @@ const QUESTIONS = [
     "Jaká je pravděpodobnost, že {player} začne na párty tancovat na stole?",
     "Na kolik procent věříš, že by {player} vyhrál(a) hádku s právníkem?",
     "Jaká je šance, že by {player} skočil(a) bungee jumping bez váhání?",
-    "Na kolik procent věříš, že má {player} doma uklizeno právě teď?"
+    "Na kolik procent věříš, že má {player} doma uklizeno právě teď?",
+    "Na kolik procent je šance, že {player} zamává někomu, kdo ve skutečnosti mával na člověka za ním?",
+    "Jaká je pravděpodobnost, že {player} řekne prodavači „tobě taky“, když mu popřeje dobrou chuť?",
+    "Na kolik procent by {player} dokázal(a) předstírat, že rozumí tématu, o kterém nemá ani ponětí?",
+    "Jaká je šance, že {player} začne vyprávět příběh a zapomene, co vlastně chtěl(a) říct?",
+    "Na kolik procent by {player} poznal(a) vlastní hlas v nahrávce a nezačal(a) pochybovat o své existenci?",
+    "Jaká je pravděpodobnost, že {player} uklouzne na rovině, kde není vůbec nic?",
+    "Na kolik procent by {player} zvládl(a) celý den předstírat, že je bohatý/á?",
+    "Jaká je šance, že {player} omylem pošle screenshot konverzace přímo člověku, o kterém se baví?",
+    "Na kolik procent by {player} dokázal(a) předstírat nemoc, aby nemusel(a) do práce, a pak se prozradit na Instagramu?",
+    "Jaká je pravděpodobnost, že {player} začne smát v situaci, kdy se to absolutně nehodí?",
+
+    // 🍻 Párty a alkohol
+    "Na kolik procent je šance, že {player} po dvou drincích začne všem vysvětlovat, jak funguje vesmír?",
+    "Jaká je pravděpodobnost, že {player} si objedná jídlo za cenu celého večera, protože má hlad?",
+    "Na kolik procent by {player} zvládl(a) dělat DJ na párty, aniž by někoho naštval(a)?",
+    "Jaká je šance, že {player} začne po půlnoci plánovat úplně nový život?",
+    "Na kolik procent by {player} dokázal(a) přesvědčit celou hospodu, aby si s ním/ní zazpívala?",
+    "Jaká je pravděpodobnost, že {player} řekne „dneska jen na jedno“ a skončí jako poslední?",
+    "Na kolik procent by {player} přežil(a) karaoke, kdyby mu/jí někdo vypnul hudbu?",
+    "Jaká je šance, že {player} začne po pár drincích rozdávat životní rady, přestože sám/sama nemá život pod kontrolou?",
+    "Na kolik procent by {player} dokázal(a) celou noc tančit, aniž by znal(a) jediný krok?",
+    "Jaká je pravděpodobnost, že {player} ztratí během jednoho večera telefon, klíče a důstojnost?",
+
+    // ❤️ Vztahy a láska
+    "Na kolik procent je šance, že {player} se zamiluje do člověka jen proto, že mu přinesl jídlo?",
+    "Jaká je pravděpodobnost, že {player} si projde profil své tajné lásky až do roku 2017?",
+    "Na kolik procent by {player} vydržel(a) týden bez toho, aby kontroloval(a), kdo mu/jí lajkuje fotky?",
+    "Jaká je šance, že {player} odpustí nevěru, když dostane opravdu drahý dárek?",
+    "Na kolik procent by {player} dokázal(a) poznat, že se jeho/její partner zlobí, jen podle tečky na konci zprávy?",
+    "Jaká je pravděpodobnost, že {player} řekne „mně je to jedno“ a pak odmítne všechno, co mu/jí nabídneš?",
+    "Na kolik procent by {player} zvládl(a) první rande bez jediné trapné věty?",
+    "Jaká je šance, že {player} začne žárlit na fiktivní postavu z filmu?",
+    "Na kolik procent by {player} dokázal(a) utajit novou známost před svými kamarády celý měsíc?",
+    "Jaká je pravděpodobnost, že {player} napíše zprávu, smaže ji a napíše ji znovu desetkrát?",
+
+    // 🧠 Zajímavé a nečekané
+    "Na kolik procent by {player} dokázal(a) vyhrát soutěž, jejíž pravidla se dozví až na konci?",
+    "Jaká je šance, že {player} jako první odhalí podvodníka v detektivce?",
+    "Na kolik procent by {player} dokázal(a) přesvědčit mimozemšťany, že lidstvo stojí za záchranu?",
+    "Jaká je pravděpodobnost, že {player} omylem založí vlastní náboženství?",
+    "Na kolik procent by {player} zvládl(a) jeden den bez jediného zalhání?",
+    "Jaká je šance, že {player} vyřeší záhadu vraždy dřív než policie, ale úplnou náhodou?",
+    "Na kolik procent by {player} dokázal(a) přežít týden v minulosti bez moderních technologií?",
+    "Jaká je pravděpodobnost, že {player} objeví nový vynález, když se bude jen snažit opravit starý?",
+    "Na kolik procent by {player} dokázal(a) přesvědčit robota, že je člověk?",
+    "Jaká je šance, že {player} omylem spustí mezinárodní konflikt jednou špatně pochopenou zprávou?",
+
+    // 💸 Peníze a morální dilemata
+    "Na kolik procent by {player} utratil(a) milion korun během jednoho týdne?",
+    "Jaká je pravděpodobnost, že {player} půjčí kamarádovi peníze a pak se bude stydět si o ně říct?",
+    "Na kolik procent by {player} přijal(a) milion korun za to, že ho/ji celý rok budou všichni oslovovat „Vaše Veličenstvo“?",
+    "Jaká je šance, že {player} by vrátil(a) peněženku plnou peněz, kdyby v ní nebyly žádné doklady?",
+    "Na kolik procent by {player} dokázal(a) žít měsíc s rozpočtem 500 Kč?",
+    "Jaká je pravděpodobnost, že {player} koupí něco úplně zbytečného jen proto, že je to ve slevě?",
+    "Na kolik procent by {player} přijal(a) práci, kde musí každý den nosit kostým obřího kuřete, za 100 000 Kč měsíčně?",
+    "Jaká je šance, že {player} zatají výhru v loterii i před vlastní rodinou?",
+    "Na kolik procent by {player} prodal(a) kamarádovo nejtrapnější tajemství za dovolenou zdarma?",
+    "Jaká je pravděpodobnost, že {player} bude mít na účtu nulu ještě před výplatou?",
+
+    // 💀 Černější humor a chaos
+    "Na kolik procent by {player} dokázal(a) přesvědčit ostatní, že náhodný požár byl součástí jeho/jejího plánu?",
+    "Jaká je pravděpodobnost, že {player} přežije hororový film jako první?",
+    "Na kolik procent by {player} zvládl(a) týden předstírat, že je tajný agent?",
+    "Jaká je šance, že {player} by se omylem stal(a) vůdcem kultu jen proto, že dobře mluví?",
+    "Na kolik procent by {player} dokázal(a) zachovat klid, kdyby mu/jí někdo řekl, že svět skončí za hodinu?",
+    "Jaká je pravděpodobnost, že {player} by se v apokalypse stal(a) větším nebezpečím pro vlastní tým než pro nepřátele?",
+    "Na kolik procent by {player} dokázal(a) přesvědčit policii, že ukradené auto bylo jen nedorozumění?",
+    "Jaká je šance, že {player} by se stal(a) záporákem jen kvůli jedné nepovedené hádce?",
+    "Na kolik procent by {player} přežil(a) výslech, kdyby nesměl(a) lhát, ale mohl(a) odpovídat jen otázkami?",
+    "Jaká je pravděpodobnost, že {player} by při útěku před zombie zakopl(a) o vlastní nohu?",
+
+    // 🤡 Osobnost a kamarádi
+    "Na kolik procent by {player} dokázal(a) přežít celý den bez toho, aby si na něco stěžoval(a)?",
+    "Jaká je šance, že {player} tajně považuje sám/sama sebe za nejchytřejšího člověka v místnosti?",
+    "Na kolik procent by {player} zvládl(a) být slavný/á, aniž by mu/jí stoupla sláva do hlavy?",
+    "Jaká je pravděpodobnost, že {player} se pohádá s navigací a stejně pojede špatně?",
+    "Na kolik procent by {player} dokázal(a) poznat kamaráda podle smíchu přes celou hospodu?",
+    "Jaká je šance, že {player} by se stal(a) virálním hitem internetu kvůli něčemu naprosto trapnému?",
+    "Na kolik procent by {player} zvládl(a) celý den odpovídat na každou otázku naprosto upřímně?",
+    "Jaká je pravděpodobnost, že {player} řekne „já to říkal(a)“ ještě dřív, než se něco pokazí?",
+    "Na kolik procent by {player} dokázal(a) týden fungovat, kdyby mu/jí někdo zakázal používat Google?",
+    "Jaká je šance, že {player} by omylem urazil(a) člověka, kterého se právě snaží sbalit?",
+
+    // 🦆 Totální absurdita
+    "Na kolik procent by {player} vyhrál(a) soudní spor proti vlastní kočce?",
+    "Jaká je pravděpodobnost, že {player} by se stal(a) starostou/starostkou malé vesnice díky jednomu povedenému vtipu?",
+    "Na kolik procent by {player} dokázal(a) naučit slepici aportovat?",
+    "Jaká je šance, že {player} by se pokusil(a) utéct před holubem, který se na něj/ni podezřele dívá?",
+    "Na kolik procent by {player} dokázal(a) vyhrát hádku s dítětem ve věku pěti let?",
+    "Jaká je pravděpodobnost, že {player} omylem koupí pozemek v jiné zemi, protože nečetl(a) smlouvu?",
+    "Na kolik procent by {player} zvládl(a) předstírat, že je odborník na tučňáky před skutečným odborníkem?",
+    "Jaká je šance, že {player} by dokázal(a) prodat led Eskymákům a ještě na tom vydělat?",
+    "Na kolik procent by {player} přežil(a) týden, kdyby každé jeho/její slovo zpíval operní pěvec?",
+    "Jaká je pravděpodobnost, že {player} omylem založí firmu, která začne vydělávat miliardy?"
 ];
 
 let renderedRoundId = null;
