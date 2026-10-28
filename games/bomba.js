@@ -424,7 +424,7 @@ function renderRunning(container, data) {
         `;
 
         document.getElementById("btnPassBomb").addEventListener("click", () => {
-            passBomb(data.holder, data.mode, data.topic);
+            passBomb(data.holder);
         });
     } else {
         document.body.className = "";
@@ -503,6 +503,8 @@ function generateTask(selectedMode = "mix", previousTopic = null) {
     return { categoryLabel, topic: taskText };
 }
 
+let lastRoundTopic = null;
+
 function startNewRound(selectedMode = "mix") {
     if (state.players.length === 0) return;
 
@@ -510,7 +512,8 @@ function startNewRound(selectedMode = "mix") {
     const randomDurationMs = (Math.floor(Math.random() * 23) + 15) * 1000;
     const explodeAt = Date.now() + randomDurationMs;
 
-    const { categoryLabel, topic } = generateTask(selectedMode);
+    const { categoryLabel, topic } = generateTask(selectedMode, lastRoundTopic);
+    lastRoundTopic = topic;
 
     set(ref(db, `rooms/${state.roomId}/games/bomba`), {
         status: "running",
@@ -522,7 +525,7 @@ function startNewRound(selectedMode = "mix") {
     });
 }
 
-function passBomb(currentHolder, currentMode = "mix", currentTopic = null) {
+function passBomb(currentHolder) {
     // Vybereme kohokoliv jiného než toho, kdo bombu právě drží
     let candidates = state.players.filter(p => p !== currentHolder);
     
@@ -532,12 +535,10 @@ function passBomb(currentHolder, currentMode = "mix", currentTopic = null) {
     }
 
     const nextHolder = candidates[Math.floor(Math.random() * candidates.length)];
-    const { categoryLabel, topic } = generateTask(currentMode, currentTopic);
 
+    // Téma i slabika zůstávají stejné po celé kolo (až do výbuchu), mění se jen držitel bomby
     update(ref(db, `rooms/${state.roomId}/games/bomba`), {
-        holder: nextHolder,
-        categoryLabel: categoryLabel,
-        topic: topic
+        holder: nextHolder
     });
 }
 
