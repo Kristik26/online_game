@@ -1,6 +1,6 @@
-import { db, ref, set, get, onValue, update, onDisconnect } from "./firebase-config.js";
-import { initBomba } from "./games/bomba.js?v=2";
-import { initSlider } from "./games/slider.js?v=2";
+import { db, ref, set, get, onValue, update, onDisconnect } from "./firebase-config.js?v=3";
+import { initBomba } from "./games/bomba.js?v=3";
+import { initSlider } from "./games/slider.js?v=3";
 
 // Globální stav hráče
 export const state = {
