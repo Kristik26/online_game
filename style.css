@@ -1,0 +1,161 @@
+* {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: system-ui, -apple-system, sans-serif;
+    background-color: #121214;
+    color: #ffffff;
+    text-align: center;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.screen {
+    display: none;
+    flex: 1;
+    padding: 20px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.screen.active {
+    display: flex;
+}
+
+h1 { font-size: 2.5rem; margin-bottom: 20px; }
+h2 { font-size: 2rem; margin: 10px 0; }
+
+input {
+    width: 100%;
+    max-width: 340px;
+    padding: 18px;
+    margin: 8px 0;
+    font-size: 1.2rem;
+    border-radius: 14px;
+    border: 2px solid #2c2c30;
+    background: #1e1e22;
+    color: white;
+    text-align: center;
+}
+
+button {
+    width: 100%;
+    max-width: 340px;
+    padding: 18px;
+    margin: 10px 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+.btn-primary { background: #3b82f6; color: white; }
+.btn-game { background: #10b981; color: white; font-size: 1.4rem; padding: 22px; }
+.btn-small { padding: 10px 16px; font-size: 0.95rem; width: auto; background: #374151; color: white; }
+
+.header-bar {
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    justify-content: space-between;
+    background: #1e1e22;
+    padding: 12px 18px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.player-grid {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    max-width: 400px;
+}
+
+.player-grid li {
+    background: #27272a;
+    padding: 10px 18px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.pulse-text {
+    color: #9ca3af;
+    animation: pulse 2s infinite;
+}
+
+/* --- STYLY PRO HRU BOMBA --- */
+.bomba-box {
+    width: 100%;
+    max-width: 420px;
+    padding: 25px;
+    border-radius: 24px;
+    transition: background-color 0.3s;
+}
+
+.topic-card {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 20px;
+    border-radius: 16px;
+    margin: 20px 0;
+}
+
+.topic-label {
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #d1d5db;
+}
+
+.topic-text {
+    font-size: 1.8rem;
+    font-weight: 900;
+    margin-top: 8px;
+}
+
+/* KDYŽ MÁ HRÁČ BOMBU V RUCE */
+body.holding-bomb {
+    background-color: #991b1b;
+    animation: alarmBg 0.7s infinite alternate;
+}
+
+.btn-pass-bomb {
+    background: #fbbf24;
+    color: #000000;
+    font-size: 2rem;
+    padding: 45px 20px;
+    border-radius: 24px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    margin-top: 20px;
+}
+
+/* KDYŽ BOMBA VYBUCHNE */
+body.exploded-screen {
+    background-color: #ea580c;
+}
+
+@keyframes alarmBg {
+    from { background-color: #7f1d1d; }
+    to { background-color: #dc2626; }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Párty Portál 🎮</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 1. PŘIHLÁŠENÍ -->
+    <div id="screen-login" class="screen active">
+        <h1>🍻 Párty Portál</h1>
+        <input type="text" id="playerName" placeholder="Tvoje přezdívka" maxlength="15" autocomplete="off">
+        <input type="text" id="roomId" placeholder="Kód místnosti" maxlength="10" autocomplete="off">
+        <button id="btnJoin" class="btn-primary">Vstoupit do místnosti</button>
+    </div>
+
+    <!-- 2. HLAVNÍ LOBBY (Rozcestník) -->
+    <div id="screen-lobby" class="screen">
+        <div class="header-bar">
+            <span>Místnost: <strong id="displayRoomId"></strong></span>
+            <span>Hráč: <strong id="displayPlayerName"></strong></span>
+        </div>
+
+        <h3>Kdo je v místnosti:</h3>
+        <ul id="playersList" class="player-grid"></ul>
+
+        <!-- Ovládání vidí jen zakladatel (Host) -->
+        <div id="hostControls" class="host-panel" style="display: none;">
+            <h3>Vyber hru pro všechny:</h3>
+            <button class="btn-game" data-game="bomba">💣 Horký Brambor (Bomba)</button>
+            <!-- Sem v budoucnu přidáš další tlačítka, např.:
+            <button class="btn-game" data-game="slider">🎚️ Tref Průměr</button>
+            <button class="btn-game" data-game="vyzivatel">🧠 Vyzivatel</button>
+            -->
+        </div>
+
+        <p id="waitingMsg" class="pulse-text">Čeká se, až hostitel vybere hru...</p>
+    </div>
+
+    <!-- 3. HRA: BOMBA -->
+    <div id="screen-bomba" class="screen">
+        <!-- Horní lišta pro návrat do lobby (vidí jen Host) -->
+        <div class="host-only-bar" style="display: none;">
+            <button class="btn-small btn-backToLobby">⬅ Zpět do výběru her</button>
+        </div>
+
+        <div id="bomba-content">
+            <!-- Obsah hry Bomba se vykresluje dynamicky přes games/bomba.js -->
+        </div>
+    </div>
+
+    <!-- Hlavní skript jako ES6 modul -->
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
