@@ -1,6 +1,6 @@
 import { db, ref, set, get, onValue, update, onDisconnect } from "./firebase-config.js";
-import { initBomba } from "./games/bomba.js";
-import { initSlider } from "./games/slider.js";
+import { initBomba } from "./games/bomba.js?v=2";
+import { initSlider } from "./games/slider.js?v=2";
 
 // Globální stav hráče
 export const state = {
@@ -65,10 +65,10 @@ function setupUI() {
     }
 
     // Nabindování tlačítek pro spuštění her v Lobby
-    document.querySelectorAll(".btn-game").forEach(btn => {
+    document.querySelectorAll("#hostControls .btn-game").forEach(btn => {
         btn.addEventListener("click", () => {
             const gameName = btn.getAttribute("data-game");
-            switchPortalState(gameName);
+            if (gameName) switchPortalState(gameName);
         });
     });
 

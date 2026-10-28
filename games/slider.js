@@ -1,5 +1,5 @@
 import { db, ref, set, onValue, update } from "../firebase-config.js";
-import { state } from "../app.js";
+import { state } from "../app.js?v=2";
 
 // Databáze subjektivních párty otázek ({player} se nahradí jménem náhodného hráče)
 const QUESTIONS = [
@@ -44,6 +44,11 @@ let renderedRoundId = null;
 
 export function initSlider() {
     const container = document.getElementById("slider-content");
+    if (!container) return;
+
+    // Rovnou vykreslíme výchozí obrazovku, než odpoví Firebase
+    renderWaiting(container);
+
     const sliderRef = ref(db, `rooms/${state.roomId}/games/slider`);
 
     onValue(sliderRef, (snapshot) => {
@@ -63,7 +68,10 @@ export function initSlider() {
         if (data.status === "results") {
             renderedRoundId = null;
             renderResults(container, data);
+            return;
         }
+
+        renderWaiting(container);
     });
 }
 
@@ -291,12 +299,12 @@ function renderResults(container, data) {
 // --- HERNÍ AKCE ---
 
 function startNewRound(previousQuestion = null) {
-    if (state.players.length === 0) return;
+    const playersList = state.players.length > 0 ? state.players : [state.myName];
 
     let finalQuestion = "";
     do {
         const template = QUESTIONS[Math.floor(Math.random() * QUESTIONS.length)];
-        const randomPlayer = state.players[Math.floor(Math.random() * state.players.length)];
+        const randomPlayer = playersList[Math.floor(Math.random() * playersList.length)];
         finalQuestion = template.replace("{player}", randomPlayer);
     } while (finalQuestion === previousQuestion && QUESTIONS.length > 1);
 
