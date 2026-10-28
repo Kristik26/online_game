@@ -42,7 +42,69 @@ const DILEMMAS = [
     ["Mít vždycky vybitý telefon na 3 %", "Mít internet rychlý jako v roce 1998"],
     ["Muset každému člověku při seznámení očichat krk", "Muset každému při rozloučení políbit ruku"],
     ["Být slavný kvůli extrémně trapnému virálnímu videu", "Být úplně neznámý, i když zachráníš svět"],
-    ["Mít neustále pocit, že potřebuješ kýchnout, ale nejde to", "Mít neustále pocit, že ti vibruje telefon v kapse"]
+    ["Mít neustále pocit, že potřebuješ kýchnout, ale nejde to", "Mít neustále pocit, že ti vibruje telefon v kapse"],
+
+    // Nová párty a trapná dilemata
+    ["Muset při každém ťuknutí skleničkou říct své nejhlubší tajemství", "Pít celý večer jen teplé pivo z plastového kelímku"],
+    ["Muset tancovat breakdance pokaždé, když slyšíš sirénu", "Muset zazpívat státní hymnu, kdykoliv vstoupíš do hospody"],
+    ["Mít obočí z vosích žihadel", "Mít vousy z včelího roje"],
+    ["Každý den potkat svého dvojníka, který tě ignoruje", "Muset nosit po zbytek života plavecké brýle i do práce"],
+    ["Mít možnost teleportovat se, ale pokaždé ztratit kalhoty", "Mít rentgenový zrak, ale vidět lidi jen v jejich nejtrapnějších chvílích"],
+    ["Muset jíst polévku vidličkou", "Muset krájet steak lžící"],
+    ["Kdykoliv tě někdo vyfotí, mít na fotce obličej Nicolase Cage", "Být na všech fotkách rozmazaný jako Bigfoot"],
+    ["Mít jazyk dlouhý 40 centimetrů", "Mít uši velké jako talíře na pizzu"],
+    ["Vždycky vědět, kdy ti někdo lže", "Vždycky vědět, jaké trapné věci si o tobě lidé myslí"],
+    ["Muset mluvit šeptem i při hádce", "Muset křičet jako na fotbale i v knihovně"],
+    ["Být navždy uvězněný v těle 12letého kluka", "Být navždy v těle 85letého důchodce (ale v plné síle)"],
+    ["Při každém sexu muset poslouchat komentář Jaromíra Bosáka", "Po každém sexu dostat od partnera známku od 1 do 5 jako ve škole"],
+    ["Muset se sprchovat jen v ledové vodě", "Muset si čistit zuby mýdlem"],
+    ["Prožít zbytek života bez sýra", "Prožít zbytek života bez čokolády a sladkostí"],
+    ["Mít křídla, ale unést tě jen na 20 centimetrů nad zem", "Mít ploutve místo chodidel"],
+    ["Vyměnit si na týden tělo s babičkou", "Vyměnit si na týden tělo s náhodným psem"],
+    ["Muset chodit na rande výhradně se svými bývalými", "Už nikdy v životě nejít na rande"],
+    ["Ztratit schopnost rozeznat sarkasmus", "Být schopen mluvit výhradně sarkasticky"],
+    ["Mít jako vyzvánění telefonu zvuk hlasitého prdu", "Mít jako vyzvánění pláč malého dítěte na plnou hlasitost"],
+    ["Žít v domě, kde straší neškodný, ale extrémně otravný duch", "Žít v bytě se třemi hysterickými fretkami"],
+    ["Muset před každým jídlem udělat 20 kliků", "Muset po každém jídle 10 minut stepovat"],
+    ["Být nucen nosit mokré džíny po celý rok", "Mít v botě neustále písek z pláže"],
+    ["Mít schopnost mluvit se zvířaty, ale všechna zvířata by tě urážela", "Mít schopnost ovládat počasí, ale jen v okruhu 1 metru kolem své hlavy"],
+    ["Muset se dívat na všechny filmy s dabingem v latině", "Mít u všech filmů posunutý zvuk o 2 vteřiny"],
+    ["Mít neomezený účet v jakékoliv hospodě, ale pít jen nealko", "Platit za každé pivo trojnásobek, ale smět pít cokoliv"],
+    ["Kdykoliv se zasměješ, vyletí ti z nosu konfety", "Kdykoliv zíváš, ozve se zvuk policejní houkačky"],
+    ["Muset spát na podlaze bez polštáře", "Muset spát ve spacáku zavěšeném na stromě"],
+    ["Umět létat rychlostí chůze", "Umět běžet rychlostí 100 km/h, ale neumět zabrzdit jinak než nárazem"],
+    ["Dostat 10 milionů korun, ale nesmět už nikdy použít chytrý telefon", "Zůstat na svých penězích a mít nejnovější techniku zdarma"],
+    ["Mít tělo pokryté peřím", "Mít tělo pokryté šupinami"],
+    ["Muset nosit celou zimu jen letní žabky", "Muset nosit celé léto péřovou zimní bundu"],
+    ["Nikdy nemuset spát a nebýt unavený", "Mít možnost kdykoliv okamžitě usnout na přesně zvolený čas"],
+    ["Být nucen jíst pizzu od okraje ke středu", "Být nucen pít pivo brčkem"],
+    ["Muset se živit jako klaun na dětských oslavách", "Muset se živit jako živá socha na náměstí"],
+    ["Mít prsty ze želé", "Mít kolena ohýbající se na druhou stranu"],
+    ["Vědět, co si o tobě myslí tvůj pes/kočka", "Vědět, co si o tobě myslí tvůj šéf"],
+    ["Muset říkat všem lidem 'pane prezidente'", "Muset po každé větě mrknout oběma očima"],
+    ["Mít kůži svítící ve tmě jako fosfor", "Mít oči, které ve tmě svítí jako dálková světla auta"],
+    ["Už nikdy nemuset uklízet ani prát", "Už nikdy nemuset vařit ani mýt nádobí"],
+    ["Zůstat 24 hodin zavřený v IKEA", "Zůstat 24 hodin zavřený v nočním supermarketu"],
+    ["Vždycky přijít o 20 minut dřív a trapně čekat", "Vždycky přijít o 15 minut pozdě a trapně se omlouvat"],
+    ["Mít schopnost zneviditelnit se, ale jen když nikdo nedívá", "Mít schopnost zastavit čas, ale stárnout během toho třikrát rychleji"],
+    ["Muset se živit jen jídlem z fastfoodu do konce života", "Muset jíst jen přísnou veganskou syrovou stravu do konce života"],
+    ["Každý den dostat náhodnou facku od cizího člověka na ulici", "Muset každý den dát facku náhodnému známému"],
+    ["Mít paměť jako zlatá rybka (5 minut)", "Pamatovat si úplně každou trapnou situaci do nejmenšího detailu navždy"],
+    ["Muset se při každém telefonátu představit jako 'Agent 007'", "Muset pokládat telefon slovy 'Miluji tě'"],
+    ["Mít jako domácího mazlíčka krokodýla v obýváku", "Mít v ložnici kolonii 50 netopýrů"],
+    ["Ztratit čich a chuť", "Ztratit schopnost rozeznávat barvy"],
+    ["Být nucen poslouchat celý den dětské písničky", "Být nucen poslouchat celý den politické debaty"],
+    ["Mít knír jako Salvador Dalí, který nejde oholit", "Mít účes jako Zdeněk Pohlreich (úplně holá hlava s leskem)"],
+    ["Muset se líbat jen s otevřenýma očima dokořán", "Muset při líbání držet partnera za obě uši"],
+    ["Vědět, kdy nastane konec světa", "Mít možnost vrátit se v čase o 10 let zpátky s dnešními znalostmi"],
+    ["Muset na každé párty vypít panáka octa", "Muset na každé párty sníst lžíci skořice"],
+    ["Mít schopnost okamžitě se naučit jakýkoliv jazyk", "Mít schopnost okamžitě hrát mistrovsky na jakýkoliv hudební nástroj"],
+    ["Být odsouzen k nošení ponožek v sandálech na všech formálních akcích", "Muset chodit na svatby a plesy v teplákové soupravě"],
+    ["Ztratit schopnost cítit fyzickou bolest", "Ztratit schopnost cítit strach"],
+    ["Mít v hlavě rádio, které nejde vypnout a hraje náhodné české šlágry", "Mít hlas, který zní jako navigace v autě"],
+    ["Být donucen nosit klaunský červený nos 365 dní v roce", "Mít boty, které při každém kroku hlasitě písknou"],
+    ["Vyhrát 50 milionů, ale muset polovinu rozdat lidem, které nesnášíš", "Vyhrát 5 milionů a nechat si všechno pro sebe"],
+    ["Vždycky vylít trochu pití při prvním loku", "Vždycky si pokapat tričko omáčkou při prvním soustu"]
 ];
 
 let latestData = null;
@@ -84,7 +146,7 @@ function renderWaiting(container) {
     container.innerHTML = `
         <div class="bomba-box">
             <h1>⚖️ Absolutní Dilema</h1>
-            <p>Co bys radši? Na displeji se ukážou dvě šílené možnosti. Vyber tu menší hrůzu!</p>
+            <p>Co bys radši? Na displeji se ukážou dvě šílené možnosti. Vyber tu menší hrůzu! (${DILEMMAS.length} dilemat v databázi)</p>
             <p style="color: #9ca3af; font-size: 0.95rem;">Kdo skončí v menšině, ztrácí bod (a obhajuje svůj výběr před ostatními)!</p>
             ${state.isHost
                 ? `<button id="btnStartDilema" class="btn-game" style="margin-top: 20px; background: #ec4899;">🔥 Spustit první dilema</button>`
