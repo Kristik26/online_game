@@ -1,0 +1,12 @@
+# Soukromé klíče a konfigurace
+firebase-env.js
+.env
+.env.*
+
+# Systémové a editorové soubory
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+node_modules/
+
