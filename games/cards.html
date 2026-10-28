@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vědomostní Výzva</title>
+    <script src="https://unpkg.com/mqtt@5.3.4/dist/mqtt.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --card: #1e293b;
+            --card-border: #334155;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text: #f8fafc;
+            --muted: #94a3b8;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin: auto 0;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: rgba(30, 41, 59, 0.7);
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid var(--card-border);
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--warning);
+            margin-right: 6px;
+        }
+        .dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); }
+        .dot.error { background: var(--danger); }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        h1 {
+            font-size: 1.7rem;
+            text-align: center;
+            background: linear-gradient(135deg, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+        }
+
+        h2 {
+            font-size: 1.25rem;
+            text-align: center;
+        }
+
+        p.sub {
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px 16px;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+            background: #0f172a;
+            color: var(--text);
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+        }
+
+        .pin-input {
+            text-align: center;
+            font-size: 1.4rem;
+            letter-spacing: 6px;
+            font-weight: 700;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s, background 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.secondary {
+            background: #334155;
+        }
+
+        button.danger-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            font-size: 0.9rem;
+            padding: 11px;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: var(--muted);
+            font-size: 0.85rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid var(--card-border);
+        }
+        .divider:not(:empty)::before { margin-right: 12px; }
+        .divider:not(:empty)::after { margin-left: 12px; }
+
+        .pin-box {
+            background: #0f172a;
+            border: 2px dashed var(--primary);
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .pin-code {
+            font-size: 2.4rem;
+            font-weight: 900;
+            letter-spacing: 8px;
+            color: #818cf8;
+        }
+
+        .players-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .player-chip {
+            background: #0f172a;
+            border: 1px solid var(--card-border);
+            padding: 8px 12px;
+            border-radius: 999px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .player-chip.answered {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.15);
+        }
+
+        .question-box {
+            background: #0f172a;
+            padding: 20px;
+            border-radius: 16px;
+            font-size: 1.15rem;
+            font-weight: 600;
+            text-align: center;
+            line-height: 1.4;
+            border: 1px solid var(--card-border);
+        }
+
+        .answers-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ans-btn {
+            text-align: left;
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid transparent;
+        }
+
+        .ans-0 { background: #2563eb; }
+        .ans-1 { background: #d97706; }
+        .ans-2 { background: #059669; }
+        .ans-3 { background: #7c3aed; }
+
+        .ans-btn.selected {
+            border-color: white;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+        }
+
+        .leaderboard-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 14px;
+            background: #0f172a;
+            border-radius: 12px;
+            border: 1px solid var(--card-border);
+        }
+
+        .leaderboard-row.me {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.15);
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="status-bar">
+        <div><span id="conn-dot" class="dot"></span><span id="conn-text">Připojování k serveru...</span></div>
+        <div id="room-badge" class="hidden">PIN: <strong id="badge-pin">----</strong></div>
+    </div>
+
+    <!-- OBRAZOVKA 1: MENU -->
+    <div id="screen-menu" class="card">
+        <h1>VĚDOMOSTNÍ VÝZVA</h1>
+        <p class="sub">Online kvíz pro 2 až 15+ hráčů (<span id="db-count">125</span> otázek)</p>
+
+        <div>
+            <label style="font-size:0.85rem; color:var(--muted); display:block; margin-bottom:6px;">Tvoje přezdívka:</label>
+            <input type="text" id="player-name" placeholder="Např. Kristián" maxlength="16">
+        </div>
+
+        <button id="btn-create" onclick="createRoom()">Vytvořit novou hru</button>
+
+        <div class="divider">NEBO SE PŘIPOJ</div>
+
+        <input type="text" id="join-pin" class="pin-input" placeholder="PIN" maxlength="4" inputmode="numeric">
+        <button id="btn-join" class="secondary" onclick="joinRoom()">Připojit se ke hře</button>
+    </div>
+
+    <!-- OBRAZOVKA 2: LOBBY -->
+    <div id="screen-lobby" class="card hidden">
+        <h2>Čekárna hráčů</h2>
+        <div class="pin-box">
+            <div style="font-size:0.8rem; color:var(--muted); margin-bottom:4px;">KÓD MÍSTNOSTI PRO PŘÁTELE</div>
+            <div id="lobby-pin" class="pin-code">0000</div>
+        </div>
+
+        <div>
+            <label style="font-size:0.85rem; color:var(--muted); display:block; margin-bottom:6px;">Počet otázek ve hře:</label>
+            <select id="round-select" onchange="changeRoundsCount(this.value)">
+                <option value="10">10 otázek (Rychlá hra)</option>
+                <option value="15" selected>15 otázek (Standardní)</option>
+                <option value="25">25 otázek (Dlouhá výzva)</option>
+            </select>
+        </div>
+
+        <div>
+            <div style="font-size:0.9rem; color:var(--muted); margin-bottom:8px;">
+                Připojení hráči (<span id="lobby-count">0</span>):
+            </div>
+            <div id="lobby-players" class="players-grid"></div>
+        </div>
+
+        <button onclick="startGame()">Spustit hru pro všechny</button>
+        <button class="danger-btn" onclick="leaveRoom()">Opustit místnost</button>
+    </div>
+
+    <!-- OBRAZOVKA 3: OTÁZKA -->
+    <div id="screen-game" class="card hidden">
+        <div style="display:flex; justify-content:space-between; color:var(--muted); font-size:0.9rem;">
+            <span id="round-info">Kolo 1 / 15</span>
+            <span id="answered-info">Odpovědělo: 0 / 0</span>
+        </div>
+
+        <div id="question-text" class="question-box">Načítání otázky...</div>
+
+        <div id="answers-container" class="answers-grid"></div>
+
+        <div>
+            <div style="font-size:0.8rem; color:var(--muted); margin-bottom:6px;">Stav hráčů v tomto kole:</div>
+            <div id="game-players" class="players-grid"></div>
+        </div>
+
+        <button class="secondary" onclick="revealResults()" style="margin-top:8px; font-size:0.9rem; padding:12px;">
+            Vyhodnotit kolo hned (nečekat)
+        </button>
+    </div>
+
+    <!-- OBRAZOVKA 4: VÝSLEDKY KOLA / KONEC -->
+    <div id="screen-results" class="card hidden">
+        <h2 id="results-title">Výsledky kola</h2>
+        <div id="correct-answer-box" style="background:rgba(34,197,94,0.15); border:1px solid var(--success); padding:12px; border-radius:12px; text-align:center; font-size:0.95rem;">
+            Správná odpověď: <strong id="correct-answer-text">---</strong>
+        </div>
+
+        <div id="leaderboard" style="display:flex; flex-direction:column; gap:8px;"></div>
+
+        <button id="btn-next-round" onclick="nextRound()">Další otázka</button>
+        <button id="btn-new-game" class="hidden" onclick="restartGame()">Hrát znovu (nové otázky)</button>
+    </div>
+</div>
+
+<script>
+const QUESTIONS = [
+    // Věda, vesmír a příroda
+    { q: "Která planeta sluneční soustavy je nejblíže Slunci?", a: ["Venuše", "Merkur", "Mars", "Země"], c: 1 },
+    { q: "Kolik kostí má přibližně dospělý člověk?", a: ["156", "206", "256", "306"], c: 1 },
+    { q: "Jaká je chemická značka pro zlato?", a: ["Ag", "Gd", "Au", "Fe"], c: 2 },
+    { q: "Jaký plyn tvoří největší část zemské atmosféry (cca 78 %)?", a: ["Kyslík", "Oxid uhličitý", "Dusík", "Vodík"], c: 2 },
+    { q: "Jaká je přibližná rychlost světla ve vakuu?", a: ["300 000 km/s", "150 000 km/s", "30 000 km/s", "1 000 000 km/s"], c: 0 },
+    { q: "Který orgán v lidském těle produkuje inzulín?", a: ["Játra", "Slinivka břišní", "Ledviny", "Slezina"], c: 1 },
+    { q: "Který kov je za běžné pokojové teploty kapalný?", a: ["Olovo", "Rtuť", "Cín", "Zinek"], c: 1 },
+    { q: "Kolik stupňů má vnitřní součet úhlů v každém trojúhelníku?", a: ["90°", "180°", "270°", "360°"], c: 1 },
+    { q: "Jaká je chemická značka pro stříbro?", a: ["Si", "Sr", "Ag", "Au"], c: 2 },
+    { q: "Která planeta je ve sluneční soustavě největší?", a: ["Saturn", "Jupiter", "Neptun", "Uran"], c: 1 },
+    { q: "Při jaké teplotě (při běžném tlaku) vře voda na stupnici Fahrenheita?", a: ["100 °F", "180 °F", "212 °F", "273 °F"], c: 2 },
+    { q: "Který savec dokáže aktivně létat?", a: ["Poletucha", "Netopýr", "Pštros", "Tučňák"], c: 1 },
+    { q: "Jak se jmenuje nejtvrdší přírodní minerál?", a: ["Křemen", "Korund", "Diamant", "Topaz"], c: 2 },
+    { q: "Kolik srdcí má chobotnice?", a: ["1", "2", "3", "4"], c: 2 },
+    { q: "Která krevní skupina je považována za univerzálního dárce červených krvinek?", a: ["AB+", "A-", "0-", "B+"], c: 2 },
+    { q: "V jakých jednotkách se měří elektrický odpor?", a: ["Ampér", "Volt", "Watt", "Ohm"], c: 3 },
+    { q: "Jak se nazývá proces, při kterém rostliny přeměňují světlo na energii?", a: ["Destilace", "Fotosyntéza", "Osmóza", "Fermentace"], c: 1 },
+    { q: "Která kost v lidském těle je nejdelší a nejpevnější?", a: ["Holenní kost", "Pažní kost", "Stehenní kost", "Klíční kost"], c: 2 },
+    { q: "Jaká je hodnota pH čisté destilované vody?", a: ["0", "5", "7", "14"], c: 2 },
+    { q: "Který prvek má v periodické tabulce protonové číslo 1?", a: ["Helium", "Kyslík", "Vodík", "Uhlík"], c: 2 },
+    { q: "Jak se nazývá nejbližší hvězda k Zemi hned po Slunci?", a: ["Sírius", "Alfa Centauri A", "Proxima Centauri", "Betelgeuse"], c: 2 },
+    { q: "Kolik zubů má standardně plný chrup dospělého člověka (včetně zubů moudrosti)?", a: ["28", "30", "32", "36"], c: 2 },
+    { q: "Který plyn dává perlivým nápojům bublinky?", a: ["Dusík", "Oxid uhličitý", "Oxid uhelnatý", "Metan"], c: 1 },
+    { q: "Jaký přístroj se používá k měření atmosférického tlaku?", a: ["Anemometr", "Hygrometr", "Barometr", "Seismograf"], c: 2 },
+    { q: "Jaké zvíře je největším žijícím živočichem na Zemi?", a: ["Slon africký", "Plejtvák obrovský", "Žralok obrovský", "Vorvaň obrovský"], c: 1 },
+
+    // Zeměpis a svět
+    { q: "Které město je hlavním městem Austrálie?", a: ["Sydney", "Melbourne", "Canberra", "Perth"], c: 2 },
+    { q: "Který oceán je rozlohou největší na světě?", a: ["Atlantský", "Indický", "Tichý", "Severní ledový"], c: 2 },
+    { q: "Jaká měna se používá ve Švýcarsku?", a: ["Euro", "Švýcarská koruna", "Švýcarský frank", "Libra"], c: 2 },
+    { q: "Jaké je hlavní město Kanady?", a: ["Toronto", "Vancouver", "Montreal", "Ottawa"], c: 3 },
+    { q: "Která řeka je podle průtoku a povodí největší na světě?", a: ["Nil", "Amazonka", "Mississippi", "Jang-c’-ťiang"], c: 1 },
+    { q: "Ve které zemi se nachází historické město Petra vytesané do skal?", a: ["Egypt", "Jordánsko", "Sýrie", "Maroko"], c: 1 },
+    { q: "Který stát je rozlohou nejmenší na světě?", a: ["Monako", "San Marino", "Vatikán", "Lichtenštejnsko"], c: 2 },
+    { q: "Jak se jmenuje nejhlubší místo na Zemi?", a: ["Mariánský příkop", "Jávský příkop", "Tonga", "Portorický příkop"], c: 0 },
+    { q: "Na kterém kontinentu leží poušť Atacama?", a: ["Afrika", "Asie", "Jižní Amerika", "Austrálie"], c: 2 },
+    { q: "Kolik hvězd je na vlajce Spojených států amerických?", a: ["48", "50", "51", "52"], c: 1 },
+    { q: "Která země má nejvíce obyvatel v Evropské unii?", a: ["Francie", "Itálie", "Španělsko", "Německo"], c: 3 },
+    { q: "Jaké je hlavní město Brazílie?", a: ["Rio de Janeiro", "São Paulo", "Brasília", "Salvador"], c: 2 },
+    { q: "Který průliv odděluje Evropu od Afriky u Španělska?", a: ["Beringův průliv", "Gibraltarský průliv", "Bospor", "Lamanšský průliv"], c: 1 },
+    { q: "Které jezero je nejhlubší na světě?", a: ["Viktoriino jezero", "Hořejší jezero", "Bajkal", "Tanganika"], c: 2 },
+    { q: "Ve které zemi leží sopka Fudži?", a: ["Čína", "Jižní Korea", "Japonsko", "Filipíny"], c: 2 },
+    { q: "Jaké je hlavní město Turecka?", a: ["Istanbul", "Ankara", "Antalya", "Izmir"], c: 1 },
+    { q: "Který ostrov je největší na světě (nepočítáme-li kontinenty)?", a: ["Madagaskar", "Borneo", "Grónsko", "Nová Guinea"], c: 2 },
+    { q: "Se kterým z těchto států Česká republika NESOUSEDÍ?", a: ["Polsko", "Rakousko", "Maďarsko", "Slovensko"], c: 2 },
+    { q: "Jakou barvu nemá ani jeden pruh na vlajce Německa?", a: ["Černou", "Červenou", "Bílou", "Zlatou"], c: 2 },
+    { q: "Ve kterém americkém státě leží Grand Canyon?", a: ["Nevada", "Arizona", "Kalifornie", "Texas"], c: 1 },
+
+    // Česká republika
+    { q: "Jaká je nejvyšší hora České republiky?", a: ["Praděd", "Sněžka", "Klínovec", "Lysá hora"], c: 1 },
+    { q: "Ve kterém roce vznikla samostatná Česká republika?", a: ["1989", "1991", "1993", "1995"], c: 2 },
+    { q: "Jak se jmenuje nejdelší řeka v České republice?", a: ["Labe", "Morava", "Vltava", "Odra"], c: 2 },
+    { q: "Jaké je mezinárodní telefonní předčíslí pro Českou republiku?", a: ["+420", "+421", "+48", "+43"], c: 0 },
+    { q: "Kdo napsal drama R.U.R., ve kterém poprvé zaznělo slovo robot?", a: ["Karel Čapek", "Jaroslav Hašek", "Milan Kundera", "Bohumil Hrabal"], c: 0 },
+    { q: "Která osobnost je vyobrazena na české bankovce v hodnotě 1000 Kč?", a: ["Karel IV.", "František Palacký", "Božena Němcová", "Tomáš Garrigue Masaryk"], c: 1 },
+    { q: "Jak se jmenuje nejvyšší hora Moravy a Slezska (Jeseníků)?", a: ["Lysá hora", "Radhošť", "Praděd", "Králický Sněžník"], c: 2 },
+    { q: "U kterého města soutékají řeky Labe a Vltava?", a: ["Litoměřice", "Mělník", "Kolín", "Nymburk"], c: 1 },
+    { q: "Který český vědec získal Nobelovu cenu za chemii za objev polarografie?", a: ["Otto Wichterle", "Jaroslav Heyrovský", "Antonín Holý", "František Křižík"], c: 1 },
+    { q: "Ve kterém městě se vyrábí pivo Pilsner Urquell?", a: ["České Budějovice", "Plzeň", "Brno", "Žatec"], c: 1 },
+    { q: "Kdo vynalezl měkké kontaktní čočky?", a: ["František Křižík", "Viktor Kaplan", "Otto Wichterle", "Prokop Diviš"], c: 2 },
+    { q: "Kolik krajů má Česká republika (včetně Prahy)?", a: ["12", "13", "14", "15"], c: 2 },
+    { q: "Jak se jmenuje největší rybník v České republice?", a: ["Bezdrev", "Rožmberk", "Svět", "Máchovo jezero"], c: 1 },
+    { q: "Na které hoře sídlí podle pověsti blaničtí rytíři?", a: ["Říp", "Blaník", "Radhošť", "Klet"], c: 1 },
+    { q: "Ve kterém roce vstoupila Česká republika do Evropské unie?", a: ["1999", "2002", "2004", "2007"], c: 2 },
+    { q: "Který hrad byl postaven Karlem IV. pro uložení korunovačních klenotů?", a: ["Křivoklát", "Karlštejn", "Bezděz", "Loket"], c: 1 },
+    { q: "Jaká je nejnižší nadmořská výška v ČR (u Hřenska)?", a: ["55 m n. m.", "115 m n. m.", "205 m n. m.", "250 m n. m."], c: 1 },
+    { q: "Kdo je autorem hudby k opeře Prodaná nevěsta?", a: ["Antonín Dvořák", "Leoš Janáček", "Bedřich Smetana", "Zdeněk Fibich"], c: 2 },
+    { q: "Ve kterém moravském městě sídlí Ústavní soud ČR?", a: ["Olomouc", "Brno", "Ostrava", "Zlín"], c: 1 },
+    { q: "Jak se jmenuje propast, která je nejhlubší zatopenou sladkovodní propastí na světě?", a: ["Macocha", "Hranická propast", "Čertova díra", "Koněpruské jeskyně"], c: 1 },
+
+    // Historie
+    { q: "Ve kterém roce skončila druhá světová válka?", a: ["1943", "1944", "1945", "1946"], c: 2 },
+    { q: "Kdo namaloval slavný obraz Mona Lisa?", a: ["Michelangelo", "Leonardo da Vinci", "Vincent van Gogh", "Pablo Picasso"], c: 1 },
+    { q: "Ve kterém roce se potopil parník Titanic?", a: ["1905", "1912", "1918", "1923"], c: 1 },
+    { q: "Kdo byl prvním člověkem, který vstoupil na povrch Měsíce?", a: ["Jurij Gagarin", "Buzz Aldrin", "Neil Armstrong", "Michael Collins"], c: 2 },
+    { q: "Ve kterém roce padla Berlínská zeď a proběhla Sametová revoluce?", a: ["1987", "1988", "1989", "1990"], c: 2 },
+    { q: "U kterého dnešního belgického města byl roku 1815 definitivně poražen Napoleon?", a: ["Bruggy", "Waterloo", "Antverpy", "Lutych"], c: 1 },
+    { q: "Který římský vojevůdce a politik byl zavražděn v březnu roku 44 př. n. l.?", a: ["Augustus", "Nero", "Julius Caesar", "Marcus Aurelius"], c: 2 },
+    { q: "Ve kterém roce byl upálen mistr Jan Hus v Kostnici?", a: ["1348", "1415", "1420", "1620"], c: 1 },
+    { q: "Jak se jmenovala první umělá družice Země vypuštěná v roce 1957?", a: ["Vostok 1", "Apollo 1", "Sputnik 1", "Sojuz 1"], c: 2 },
+    { q: "Která bitva z roku 1620 znamenala porážku českého stavovského povstání?", a: ["Bitva u Lipan", "Bitva na Bílé hoře", "Bitva u Slavkova", "Bitva u Hradce Králové"], c: 1 },
+    { q: "Ve kterém roce založil Karel IV. pražskou univerzitu?", a: ["1306", "1348", "1378", "1402"], c: 1 },
+    { q: "Kdo objevil roku 1928 penicilin?", a: ["Louis Pasteur", "Alexander Fleming", "Robert Koch", "Marie Curie"], c: 1 },
+    { q: "Ve kterém ukrajinském městě došlo v roce 1986 k havárii jaderné elektrárny?", a: ["Záporoží", "Černobyl / Pripjať", "Charkov", "Oděsa"], c: 1 },
+    { q: "Jak se jmenovala loď, na které Kryštof Kolumbus v roce 1492 doplul k Americe?", a: ["Mayflower", "Santa María", "Victory", "Beagle"], c: 1 },
+    { q: "Kdo byl prvním prezidentem Československa?", a: ["Edvard Beneš", "Tomáš Garrigue Masaryk", "Klement Gottwald", "Emil Hácha"], c: 1 },
+
+    // Technologie, IT, auta a hry
+    { q: "Kolik bitů má jeden bajt (byte)?", a: ["4", "8", "16", "32"], c: 1 },
+    { q: "Co znamená zkratka CPU v počítači?", a: ["Central Power Unit", "Central Processing Unit", "Computer Personal Unit", "Core Graphic Unit"], c: 1 },
+    { q: "Jaký síťový port standardně používá zabezpečený protokol HTTPS?", a: ["21", "80", "443", "8080"], c: 2 },
+    { q: "Jaké číslo v desítkové soustavě odpovídá binárnímu zápisu 1010?", a: ["8", "10", "12", "16"], c: 1 },
+    { q: "Které studio vytvořilo herní sérii Grand Theft Auto (GTA)?", a: ["Ubisoft", "Rockstar Games", "EA Sports", "Valve"], c: 1 },
+    { q: "V jakém programovacím jazyce byla původně napsána hra Minecraft (Java Edition)?", a: ["C++", "Python", "Java", "C#"], c: 2 },
+    { q: "Co znamená zkratka RAM?", a: ["Read Access Memory", "Random Access Memory", "Rapid Action Module", "Run All Memory"], c: 1 },
+    { q: "Která česká hra se odehrává v roce 1403 v okolí Stříbrné Skalice a Ratají?", a: ["Mafia", "Kingdom Come: Deliverance", "Arma 3", "Vietcong"], c: 1 },
+    { q: "Jak se jmenuje fiktivní město, ve kterém se odehrává první díl české hry Mafia?", a: ["Empire Bay", "Lost Heaven", "Los Santos", "Vice City"], c: 1 },
+    { q: "Co u spalovacích motorů označuje zkratka TDI?", a: ["Turbo Direct Injection", "Total Diesel Ignition", "Twin Dynamic Intake", "Thermal Drive Engine"], c: 0 },
+    { q: "Která součástka v autě dobíjí autobaterii za jízdy?", a: ["Startér", "Alternátor", "Katalyzátor", "Diferenciál"], c: 1 },
+    { q: "Kolik koní (HP) odpovídá zhruba výkonu 100 kW?", a: ["cca 100 koní", "cca 115 koní", "cca 136 koní", "cca 160 koní"], c: 2 },
+    { q: "V kterém českém městě má hlavní sídlo a výrobu automobilka Škoda Auto?", a: ["Kvasiny", "Mladá Boleslav", "Kolín", "Nošovice"], c: 1 },
+    { q: "Jak se jmenuje zakladatel společnosti Microsoft?", a: ["Steve Jobs", "Elon Musk", "Bill Gates", "Mark Zuckerberg"], c: 2 },
+    { q: "Jaká klávesová zkratka ve Windows slouží pro vrácení poslední akce (Zpět)?", a: ["Ctrl + C", "Ctrl + Z", "Ctrl + X", "Ctrl + Y"], c: 1 },
+    { q: "Co znamená stavový kód HTTP 404?", a: ["Chyba serveru", "Přístup odepřen", "Stránka nenalezena", "Úspěšný požadavek"], c: 2 },
+    { q: "Jak se jmenuje hlavní hrdina herní a knižní série Zaklínač (The Witcher)?", a: ["Vesemir", "Geralt z Rivie", "Ezio Auditore", "Arthur Morgan"], c: 1 },
+    { q: "Která společnost vyvíjí mobilní operační systém Android?", a: ["Apple", "Microsoft", "Google", "Samsung"], c: 2 },
+
+    // Filmy, hudba, sport a kultura
+    { q: "Kolik hráčů jednoho týmu je současně na ledě při hokeji (včetně brankáře)?", a: ["5", "6", "7", "11"], c: 1 },
+    { q: "Jak dlouho trvá základní hrací doba běžného fotbalového zápasu?", a: ["60 minut", "80 minut", "90 minut", "100 minut"], c: 2 },
+    { q: "Ve kterém roce vyhráli čeští hokejisté olympijský turnaj v Naganu?", a: ["1994", "1998", "2002", "2006"], c: 1 },
+    { q: "Kolik kruhů tvoří symbol olympijských her?", a: ["4", "5", "6", "7"], c: 1 },
+    { q: "Který režisér natočil české filmy Pelíšky a Pupendo?", a: ["Zdeněk Svěrák", "Jan Hřebejk", "Miloš Forman", "Jiří Menzel"], c: 1 },
+    { q: "Jak se jmenuje kouzelnická škola, kterou navštěvoval Harry Potter?", a: ["Stříbrný vrch", "Bradavice", "Krásnohůlky", "Kruval"], c: 1 },
+    { q: "Kolik prstenů moci bylo ukováno pro pány elfů v Pánovi prstenů?", a: ["3", "7", "9", "1"], c: 0 },
+    { q: "Jakou pilulku si vybere Neo ve filmu Matrix, aby poznal pravdu?", a: ["Modrou", "Zelenou", "Červenou", "Žlutou"], c: 2 },
+    { q: "Kdo složil slavnou skladbu Pro Elišku (Für Elise)?", a: ["W. A. Mozart", "Ludwig van Beethoven", "Johann Sebastian Bach", "Antonio Vivaldi"], c: 1 },
+    { q: "Na jakém povrchu se hraje slavný tenisový turnaj Roland Garros v Paříži?", a: ["Tráva", "Antuka", "Tvrdý povrch", "Koberec"], c: 1 },
+    { q: "Jaká je přesná délka maratonského běhu?", a: ["40,000 km", "42,195 km", "45,500 km", "50,000 km"], c: 1 },
+    { q: "Který herec ztvárnil postavu Iron Mana (Tonyho Starka) ve filmech od Marvelu?", a: ["Chris Evans", "Robert Downey Jr.", "Chris Hemsworth", "Hugh Jackman"], c: 1 },
+    { q: "Jak se jmenuje žlutá rodinka ze seriálu, která bydlí ve městečku Springfield?", a: ["Griffinovi", "Simpsonovi", "Flintstoneovi", "Jetsonovi"], c: 1 },
+    { q: "Kolik políček má standardní šachovnice?", a: ["32", "48", "64", "81"], c: 2 },
+
+    // Gastro a různé zajímavosti
+    { q: "Z jaké rostliny se vyrábí pravý karibský rum?", a: ["Agáve", "Cukrová třtina", "Kukuřice", "Ječmen"], c: 1 },
+    { q: "Jaká hlavní surovina tvoří základ mexického dipu guacamole?", a: ["Rajčata", "Paprika", "Avokádo", "Fazole"], c: 2 },
+    { q: "Které koření je nejdražší na světě podle hmotnosti?", a: ["Vanilka", "Šafrán", "Kardamom", "Skořice"], c: 1 },
+    { q: "Z jakého ovoce se vyrábí tradiční nápoj cider?", a: ["Z hrušek", "Z jablek", "Z hroznů", "Ze švestek"], c: 1 },
+    { q: "Jaký alkohol je základem koktejlu Mojito?", a: ["Vodka", "Gin", "Bílý rum", "Tequila"], c: 2 },
+    { q: "Kolik dní má přestupný rok?", a: ["364", "365", "366", "367"], c: 2 },
+    { q: "Jaké římské číslo představuje písmeno L?", a: ["10", "50", "100", "500"], c: 1 },
+    { q: "Který smysl mají psi nejvíce vyvinutý?", a: ["Zrak", "Sluch", "Čich", "Chuť"], c: 2 },
+    { q: "Jak se jmenuje tradiční japonské umění skládání papíru?", a: ["Bonsai", "Origami", "Ikebana", "Sudoku"], c: 1 },
+    { q: "Z jakého dřeva se nejčastěji vyrábějí sudy pro zrání vína a whisky?", a: ["Smrk", "Bříza", "Dub", "Borovice"], c: 2 },
+    { q: "Kolik karet má standardní balíček mariášových karet (prší)?", a: ["24", "32", "52", "64"], c: 1 },
+    { q: "Jaká barva vznikne smícháním modré a žluté barvy?", a: ["Fialová", "Oranžová", "Zelená", "Hnědá"], c: 2 },
+    { q: "Co měří Richterova stupnice?", a: ["Rychlost větru", "Sílu zemětřesení", "Pálivost chilli", "Tvrdost nerostů"], c: 1 }
+
+,
+    // --- DALŠÍ OTÁZKY: VĚDA A PŘÍRODA ---
+    { q: "Jaká je chemická značka pro železo?", a: ["Ir", "Fe", "Zn", "Cu"], c: 1 },
+    { q: "Který plyn rostliny uvolňují do atmosféry při fotosyntéze?", a: ["Oxid uhličitý", "Dusík", "Kyslík", "Vodík"], c: 2 },
+    { q: "Jak se jmenuje nejrychlejší suchozemské zvíře?", a: ["Lev", "Gepard", "Antilopa", "Pštros"], c: 1 },
+    { q: "Kolik nohou má pavouk?", a: ["6", "8", "10", "12"], c: 1 },
+    { q: "V jakých jednotkách se měří elektrické napětí?", a: ["Ampér", "Watt", "Volt", "Joule"], c: 2 },
+    { q: "V jakých jednotkách se měří elektrický proud?", a: ["Ampér", "Volt", "Ohm", "Hertz"], c: 0 },
+    { q: "Která planeta je známá jako 'Rudá planeta'?", a: ["Venuše", "Jupiter", "Mars", "Saturn"], c: 2 },
+    { q: "Jak se nazývá věda zkoumající houby?", a: ["Botanika", "Mykologie", "Zoologie", "Entomologie"], c: 1 },
+    { q: "Který pták dokáže létat i pozpátku?", a: ["Vlaštovka", "Kolibřík", "Rorýs", "Ledňáček"], c: 1 },
+    { q: "Jaká je přibližná teplota absolutní nuly ve stupních Celsia?", a: ["-100 °C", "-196 °C", "-273,15 °C", "-360 °C"], c: 2 },
+    { q: "Který vitamín si lidské tělo vytváří díky slunečnímu záření?", a: ["Vitamín A", "Vitamín C", "Vitamín D", "Vitamín K"], c: 2 },
+    { q: "Jaká je chemická značka pro olovo?", a: ["Ol", "Pb", "Sn", "Pl"], c: 1 },
+    { q: "Jaká je chemická značka pro měď?", a: ["Me", "Cu", "Md", "Co"], c: 1 },
+    { q: "Kolik komor má lidské srdce?", a: ["2", "3", "4", "6"], c: 2 },
+    { q: "Který orgán v lidském těle čistí krev a vyrábí žluč?", a: ["Ledviny", "Slezina", "Játra", "Plíce"], c: 2 },
+    { q: "Jak se nazývá přechod pevné látky přímo na plyn (bez kapalného skupenství)?", a: ["Kondenzace", "Sublimace", "Tání", "Vypařování"], c: 1 },
+    { q: "Jaká je přibližná rychlost zvuku ve vzduchu?", a: ["120 m/s", "343 m/s", "1 000 m/s", "3 000 m/s"], c: 1 },
+    { q: "Která planeta má nejvýraznější soustavu prstenců?", a: ["Uran", "Jupiter", "Saturn", "Neptun"], c: 2 },
+    { q: "Jak se jmenuje naše galaxie?", a: ["Andromeda", "Mléčná dráha", "Velký vůz", "Orion"], c: 1 },
+    { q: "Kolik párů chromozomů má zdravý člověk?", a: ["21", "23", "46", "48"], c: 1 },
+    { q: "Který hmyz přenáší malárii?", a: ["Moucha tse-tse", "Klíště", "Komár rodu Anopheles", "Blecha"], c: 2 },
+    { q: "Jak se nazývá nejvyšší vrstva zemské atmosféry?", a: ["Troposféra", "Stratosféra", "Mezosféra", "Exosféra"], c: 3 },
+    { q: "Který strom má typické bílé zbarvení kůry?", a: ["Dub", "Buk", "Bříza", "Javor"], c: 2 },
+    { q: "Jak se jmenuje mládě od ovce?", a: ["Kůzle", "Jehně", "Sele", "Hříbě"], c: 1 },
+    { q: "Jaká je chemická značka kuchyňské soli?", a: ["HCl", "NaOH", "NaCl", "KCl"], c: 2 },
+    { q: "V jakých jednotkách se měří frekvence?", a: ["Decibel", "Hertz", "Pascal", "Newton"], c: 1 },
+    { q: "Který plyn je lehčí než vzduch a používá se k plnění balónků?", a: ["Kyslík", "Argon", "Helium", "Propan"], c: 2 },
+    { q: "Jak se jmenuje největší suchozemská šelma na světě?", a: ["Lev pustinný", "Tygr ussurijský", "Medvěd lední", "Medvěd hnědý"], c: 2 },
+    { q: "Která část oka je zodpovědná za jeho barvu?", a: ["Rohovka", "Sítnice", "Duhovka", "Čočka"], c: 2 },
+    { q: "Kolik krčních obratlů má žirafa (stejně jako člověk)?", a: ["7", "14", "21", "28"], c: 0 },
+
+    // --- DALŠÍ OTÁZKY: ZEMĚPIS A SVĚT ---
+    { q: "Jaké je hlavní město Španělska?", a: ["Barcelona", "Valencie", "Madrid", "Sevilla"], c: 2 },
+    { q: "Jaké je hlavní město Japonska?", a: ["Kjóto", "Ósaka", "Tokio", "Jokohama"], c: 2 },
+    { q: "Jaké je hlavní město Egypta?", a: ["Alexandrie", "Káhira", "Luxor", "Gíza"], c: 1 },
+    { q: "Které pohoří tvoří přirozenou hranici mezi Evropou a Asií?", a: ["Kavkaz", "Ural", "Altaj", "Karpaty"], c: 1 },
+    { q: "Ve kterém městě stojí slavná socha Krista Spasitele?", a: ["Lisabon", "Buenos Aires", "Rio de Janeiro", "Lima"], c: 2 },
+    { q: "Která řeka protéká Londýnem?", a: ["Seina", "Temže", "Rýn", "Dunaj"], c: 1 },
+    { q: "Která řeka protéká Paříží?", a: ["Loira", "Rhôna", "Seina", "Temže"], c: 2 },
+    { q: "Ve které zemi se nachází Machu Picchu?", a: ["Mexiko", "Peru", "Chile", "Kolumbie"], c: 1 },
+    { q: "Jak se jmenuje nejvyšší hora světa?", a: ["K2", "Mount Everest", "Kangčendženga", "Kilimandžáro"], c: 1 },
+    { q: "Jak se jmenuje nejvyšší hora Afriky?", a: ["Mount Kenya", "Kilimandžáro", "Atlas", "Elbrus"], c: 1 },
+    { q: "Jak se jmenuje nejvyšší hora Evropy (pokud nepočítáme Kavkaz)?", a: ["Matterhorn", "Mont Blanc", "Grossglockner", "Gerlachovský štít"], c: 1 },
+    { q: "Který stát má tvar připomínající vysokou jezdeckou botu?", a: ["Řecko", "Španělsko", "Itálie", "Chorvatsko"], c: 2 },
+    { q: "Jaké je hlavní město Polska?", a: ["Krakov", "Varšava", "Gdaňsk", "Vratislav"], c: 1 },
+    { q: "Jaké je hlavní město Maďarska?", a: ["Debrecín", "Segedín", "Budapešť", "Bratislava"], c: 2 },
+    { q: "Který kanál spojuje Středozemní moře s Rudým mořem?", a: ["Panamský průplav", "Suezský průplav", "Korintský průplav", "Lamanšský průliv"], c: 1 },
+    { q: "Ve kterém státě leží město Dubaj?", a: ["Saúdská Arábie", "Katar", "Spojené arabské emiráty", "Kuvajt"], c: 2 },
+    { q: "Jaký jazyk je úředním jazykem v Brazílii?", a: ["Španělština", "Brazilština", "Portugalština", "Francouzština"], c: 2 },
+    { q: "Která poušť je největší horkou pouští na světě?", a: ["Gobi", "Sahara", "Kalahari", "Rub al-Chálí"], c: 1 },
+    { q: "Na které řece leží Niagarské vodopády (mezi USA a Kanadou)?", a: ["Colorado", "Niagara", "Svatého Vavřince", "Missouri"], c: 1 },
+    { q: "Jaké je hlavní město Řecka?", a: ["Soluň", "Athény", "Sparta", "Heraklion"], c: 1 },
+    { q: "Který ostrov patří Itálii?", a: ["Korsika", "Sicílie", "Mallorca", "Kréta"], c: 1 },
+    { q: "Který evropský stát je známý jako 'země tisíců jezer'?", a: ["Norsko", "Švédsko", "Finsko", "Island"], c: 2 },
+    { q: "Jaké je hlavní město Argentiny?", a: ["Santiago", "Montevideo", "Buenos Aires", "Bogotá"], c: 2 },
+    { q: "Ve kterém moři leží ostrov Kypr?", a: ["Černé moře", "Rudé moře", "Středozemní moře", "Jaderské moře"], c: 2 },
+    { q: "Kolik časových pásem má pevninská Čína?", a: ["1", "3", "5", "8"], c: 0 },
+    { q: "Jaké je hlavní město Irska?", a: ["Belfast", "Dublin", "Cork", "Edinburgh"], c: 1 },
+    { q: "Která asijská země leží na souostroví více než 17 000 ostrovů?", a: ["Malajsie", "Thajsko", "Indonésie", "Srí Lanka"], c: 2 },
+    { q: "Jaká měna se používá v Japonsku?", a: ["Jüan", "Won", "Jen", "Ringgit"], c: 2 },
+    { q: "Které město leží zároveň v Evropě i v Asii?", a: ["Atény", "Istanbul", "Baku", "Tbilisi"], c: 1 },
+    { q: "Jaké je hlavní město Norska?", a: ["Stockholm", "Kodaň", "Oslo", "Helsinky"], c: 2 },
+
+    // --- DALŠÍ OTÁZKY: ČESKÁ REPUBLIKA ---
+    { q: "Která osobnost je vyobrazena na české bankovce v hodnotě 2000 Kč?", a: ["Božena Němcová", "Ema Destinnová", "Anežka Česká", "Eliška Přemyslovna"], c: 1 },
+    { q: "Která osobnost je na české bankovce v hodnotě 200 Kč?", a: ["Karel IV.", "Jan Amos Komenský", "Přemysl Otakar I.", "František Palacký"], c: 1 },
+    { q: "Ve kterém městě se nachází slavný orloj na Staroměstské radnici?", a: ["Brno", "Olomouc", "Praha", "Plzeň"], c: 2 },
+    { q: "Jak se jmenuje nejvyšší hora Šumavy na české straně?", a: ["Boubín", "Plechý", "Poledník", "Špičák"], c: 1 },
+    { q: "Jak se jmenuje nejvyšší hora Beskyd?", a: ["Radhošť", "Smrk", "Lysá hora", "Velký Javorník"], c: 2 },
+    { q: "Ve kterém kraji leží město Karlovy Vary?", a: ["Plzeňský", "Ústecký", "Karlovarský", "Středočeský"], c: 2 },
+    { q: "Který český zámek je známý svou bílou fasádou a inspirací anglickým Windsorem?", a: ["Lednice", "Hluboká nad Vltavou", "Konopiště", "Český Krumlov"], c: 1 },
+    { q: "Jaká řeka protéká centrem města Brna (spolu se Svitavou)?", a: ["Dyje", "Morava", "Svratka", "Jihlava"], c: 2 },
+    { q: "Jaká řeka protéká městem Hradec Králové?", a: ["Vltava", "Labe", "Jizera", "Ohře"], c: 1 },
+    { q: "Kdo napsal slavný humoristický román Osudy dobrého vojáka Švejka?", a: ["Karel Čapek", "Jaroslav Hašek", "Vladislav Vančura", "Ota Pavel"], c: 1 },
+    { q: "Kdo je autorem sbírky balad Kytice?", a: ["Karel Hynek Mácha", "Karel Jaromír Erben", "Jan Neruda", "Božena Němcová"], c: 1 },
+    { q: "Ve kterém městě se tradičně vyrábějí lázeňské oplatky a bylinný likér Becherovka?", a: ["Mariánské Lázně", "Karlovy Vary", "Luhačovice", "Poděbrady"], c: 1 },
+    { q: "Které moravské město je proslulé výrobou obuvi, kterou založil Tomáš Baťa?", a: ["Přerov", "Prostějov", "Zlín", "Uherské Hradiště"], c: 2 },
+    { q: "Jak se jmenuje vysílač a hotel na vrcholu hory Ještěd?", a: ["Ještěd", "Praděd", "Žižkovská věž", "Krkonoše"], c: 0 },
+    { q: "Ve kterém roce proběhla měnová odluka a vznikla česká koruna (Kč)?", a: ["1990", "1993", "1995", "1998"], c: 1 },
+    { q: "Která vodní nádrž v ČR má největší rozlohu vodní plochy?", a: ["Orlík", "Slapy", "Lipno", "Nové Mlýny"], c: 2 },
+    { q: "Která česká přehrada zadržuje největší objem vody?", a: ["Lipno", "Orlík", "Dalešice", "Šance"], c: 1 },
+    { q: "Jak se jmenuje pískovcový skalní útvar v Českém Švýcarsku?", a: ["Čertovy hlavy", "Pravčická brána", "Panská skála", "Adršpach"], c: 1 },
+    { q: "Který kníže je uctíván jako hlavní patron české země (svátek 28. září)?", a: ["Svatý Vojtěch", "Svatý Václav", "Svatý Prokop", "Svatý Vít"], c: 1 },
+    { q: "Na kterém hradě pobýval před svou smrtí císař František Ferdinand d'Este?", a: ["Křivoklát", "Konopiště", "Buchlov", "Pernštejn"], c: 1 },
+
+    // --- DALŠÍ OTÁZKY: HISTORIE ---
+    { q: "Kdo vynalezl v 15. století knihtisk v Evropě?", a: ["Galileo Galilei", "Johannes Gutenberg", "Leonardo da Vinci", "Martin Luther"], c: 1 },
+    { q: "Ve kterém roce začala první světová válka?", a: ["1912", "1914", "1916", "1918"], c: 1 },
+    { q: "Jakou událostí bezprostředně vypukla první světová válka?", a: ["Potopení Lusitanie", "Atentát v Sarajevu", "Útok na Polsko", "Bitva u Verdunu"], c: 1 },
+    { q: "Kdo byl prvním člověkem ve vesmíru (v roce 1961)?", a: ["Neil Armstrong", "Jurij Gagarin", "Alan Shepard", "Vladimír Remek"], c: 1 },
+    { q: "Kdo byl prvním československým kosmonautem (v roce 1978)?", a: ["Oldřich Pelčák", "Vladimír Remek", "Ivan Bella", "Aleš Svoboda"], c: 1 },
+    { q: "Ve kterém městě se narodila královna Kleopatra a stála tam slavná knihovna?", a: ["Memfis", "Théby", "Alexandrie", "Káhira"], c: 2 },
+    { q: "Jak se jmenoval poslední ruský car zavražděný bolševiky v roce 1918?", a: ["Alexandr III.", "Petr Veliký", "Mikuláš II.", "Ivan Hrozný"], c: 2 },
+    { q: "Která starověká civilizace postavila pyramidy v Gíze?", a: ["Mayové", "Řekové", "Egypťané", "Římané"], c: 2 },
+    { q: "Ve kterém roce začala Velká francouzská revoluce dobytím Bastily?", a: ["1776", "1789", "1804", "1848"], c: 1 },
+    { q: "Kdo formuloval teorii relativity (E = mc²)?", a: ["Isaac Newton", "Nikola Tesla", "Albert Einstein", "Stephen Hawking"], c: 2 },
+    { q: "Jak se jmenovala první žena, která získala Nobelovu cenu (dokonce dvakrát)?", a: ["Rozalinda Franklinová", "Marie Curie-Skłodowská", "Ada Lovelace", "Matka Tereza"], c: 1 },
+    { q: "Které římské město pohřbil v roce 79 n. l. výbuch sopky Vesuv?", a: ["Neapol", "Pompeje", "Syrakusy", "Kartágo"], c: 1 },
+    { q: "Jak se jmenoval makedonský král, který vytvořil obrovskou říši sahající až k Indii?", a: ["Filip II.", "Leonidas", "Alexandr Veliký", "Dareios"], c: 2 },
+    { q: "Ve kterém roce byla podepsána Deklarace nezávislosti USA?", a: ["1620", "1776", "1789", "1865"], c: 1 },
+    { q: "Jak se jmenoval vojevůdce Kartága, který přešel Alpy se slony?", a: ["Scipio", "Hannibal", "Spartakus", "Pyrrhos"], c: 1 },
+    { q: "Který český vojevůdce vedl husity a nikdy neprohrál žádnou bitvu?", a: ["Prokop Holý", "Jan Žižka z Trocnova", "Jan Roháč z Dubé", "Jiří z Poděbrad"], c: 1 },
+    { q: "Jak dlouho ve skutečnosti trvala tzv. Stoletá válka mezi Anglií a Francií?", a: ["99 let", "100 let", "116 let", "130 let"], c: 2 },
+    { q: "Ve kterém roce vstoupili spojenci (vojska Varšavské smlouvy) do Československa?", a: ["1948", "1956", "1968", "1977"], c: 2 },
+    { q: "Kdo byl britským premiérem během většiny druhé světové války?", a: ["Neville Chamberlain", "Winston Churchill", "Margaret Thatcherová", "Clement Attlee"], c: 1 },
+    { q: "Který mořeplavec vedl výpravu, jež jako první obeplula celý svět?", a: ["Vasco da Gama", "Fernão de Magalhães", "James Cook", "Francis Drake"], c: 1 },
+
+    // --- DALŠÍ OTÁZKY: TECHNOLOGIE, IT, AUTA A HRY ---
+    { q: "Co znamená zkratka GPU?", a: ["General Power Unit", "Graphics Processing Unit", "Gaming Performance Utility", "Global Pixel Unit"], c: 1 },
+    { q: "Jaký je základní značkovací jazyk pro tvorbu webových stránek?", a: ["CSS", "HTML", "PHP", "SQL"], c: 1 },
+    { q: "K čemu slouží v programování systém Git?", a: ["K překladu kódu", "Ke správě verzí kódu", "K návrhu grafiky", "K čištění RAM"], c: 1 },
+    { q: "Jak se jmenuje open-source operační systém s tučňákem Tuxem ve znaku?", a: ["Unix", "Linux", "macOS", "FreeBSD"], c: 1 },
+    { q: "Kolik megabajtů (MB) má standardně v binární soustavě 1 gigabajt (GiB)?", a: ["100", "512", "1000", "1024"], c: 3 },
+    { q: "Co znamená u disků v počítači zkratka SSD?", a: ["Super Speed Disk", "Solid State Drive", "System Storage Device", "Silicon Serial Disk"], c: 1 },
+    { q: "Jakou IP adresu má standardně lokální smyčka (localhost)?", a: ["192.168.1.1", "127.0.0.1", "10.0.0.1", "255.255.255.0"], c: 1 },
+    { q: "Která společnost vyrábí grafické karty řady GeForce?", a: ["AMD", "Intel", "NVIDIA", "ASUS"], c: 2 },
+    { q: "Která společnost vyrábí procesory Ryzen a grafické karty Radeon?", a: ["Intel", "AMD", "Qualcomm", "ARM"], c: 1 },
+    { q: "Jak se jmenuje hlavní postava v herní sérii Tomb Raider?", a: ["Aloy", "Lara Croft", "Ellie", "Jill Valentine"], c: 1 },
+    { q: "Ve které populární hře proti sobě bojují Teroristé (T) a Counter-Teroristé (CT)?", a: ["Call of Duty", "Counter-Strike", "Battlefield", "Overwatch"], c: 1 },
+    { q: "Jak se jmenuje herní platforma a obchod pro PC od společnosti Valve?", a: ["Epic Games", "Origin", "Steam", "Uplay"], c: 2 },
+    { q: "Ve které zemi vznikla populární logická hra s padajícími kostkami Tetris?", a: ["Japonsko", "USA", "Sovětský svaz", "Polsko"], c: 2 },
+    { q: "Jak se jmenuje instalatér v červené čepici od společnosti Nintendo?", a: ["Luigi", "Sonic", "Mario", "Wario"], c: 2 },
+    { q: "Která automobilka má ve znaku čtyři propojené kruhy?", a: ["BMW", "Mercedes-Benz", "Audi", "Volkswagen"], c: 2 },
+    { q: "Z které země pochází automobilka Volvo?", a: ["Německo", "Finsko", "Švédsko", "Norsko"], c: 2 },
+    { q: "Co u brzdového systému v autě znamená zkratka ABS?", a: ["Automatická brzdová spojka", "Antiblokovací brzdový systém", "Aktivní balanční stabilizátor", "Asistent brzdné síly"], c: 1 },
+    { q: "Jakou barvu má kontrolka dálkových světel na palubní desce auta?", a: ["Zelenou", "Oranžovou", "Modrou", "Červenou"], c: 2 },
+    { q: "K čemu slouží v naftovém autě filtr pevných částic (DPF)?", a: ["K chlazení turba", "K zachycování sazí z výfuku", "K čištění nafty", "Ke snížení hluku"], c: 1 },
+    { q: "Jak se jmenuje tradiční český výrobce traktorů sídlící v Brně?", a: ["Tatra", "Liaz", "Zetor", "Praga"], c: 2 },
+    { q: "Která česká značka motocyklů proslavila v minulosti červené stroje Pérák a Kývačka?", a: ["ČZ", "Jawa", "Babetta", "Stadion"], c: 1 },
+    { q: "Co udává hodnota 5W-30 u motorového oleje?", a: ["Objem balení", "Viskozitu oleje", "Obsah síry", "Maximální tlak"], c: 1 },
+    { q: "Jak se nazývá konektor používaný pro diagnostiku moderních aut (od roku 2001+)?", a: ["RS-232", "OBD-II", "CAN-USB", "SCART"], c: 1 },
+    { q: "Jaké napětí má běžná startovací autobaterie v osobním autě v klidovém stavu?", a: ["cca 5 V", "cca 12,6 V", "cca 24 V", "cca 48 V"], c: 1 },
+    { q: "Co znamená v letectví zkratka ILS?", a: ["Přístrojový přistávací systém", "Mezinárodní letový standard", "Indikátor letové stopy", "Integrovaný radar"], c: 0 },
+
+    // --- DALŠÍ OTÁZKY: FILMY, SERIÁLY, HUDBA A SPORT ---
+    { q: "Jak se jmenuje hobit, který v Pánovi prstenů nese Jeden prsten k Hoře osudu?", a: ["Bilbo Pytlík", "Samvěd Křepelka", "Frodo Pytlík", "Peregrin Bral"], c: 2 },
+    { q: "Kdo je otcem Luka Skywalkera ve Star Wars?", a: ["Obi-Wan Kenobi", "Darth Vader", "Han Solo", "Mistr Yoda"], c: 1 },
+    { q: "Ve kterém městě žije komiksový hrdina Batman?", a: ["Metropolis", "Gotham City", "Star City", "New York"], c: 1 },
+    { q: "Jak se jmenuje slavný agent s označením 007?", a: ["Ethan Hunt", "Jason Bourne", "James Bond", "Johnny English"], c: 2 },
+    { q: "Který český film získal v roce 1997 Oscara za nejlepší cizojazyčný film (režie Jan Svěrák)?", a: ["Obecná škola", "Kolja", "Tmavomodrý svět", "Vratné lahve"], c: 1 },
+    { q: "Kdo hrál hlavní roli v kultovním českém filmu Dědictví aneb Kurvahošigutntág?", a: ["Miroslav Donutil", "Bolek Polívka", "Karel Roden", "Jiří Bartoška"], c: 1 },
+    { q: "Jak se jmenuje kavárna, kde se schází šestice přátel v seriálu Přátelé (Friends)?", a: ["MacLaren's", "Central Perk", "Monk's Café", "Starbucks"], c: 1 },
+    { q: "Jakou přezdívku používá učitel chemie Walter White v seriálu Perníkový táta (Breaking Bad)?", a: ["Oppenheimer", "Heisenberg", "Schrödinger", "Einstein"], c: 1 },
+    { q: "Ve které kapele zpíval legendární Freddie Mercury?", a: ["The Beatles", "The Rolling Stones", "Queen", "Pink Floyd"], c: 2 },
+    { q: "Z jakého britského města pocházela kapela The Beatles?", a: ["Londýn", "Manchester", "Liverpool", "Birmingham"], c: 2 },
+    { q: "Kolik strun má standardní klasická nebo akustická kytara?", a: ["4", "5", "6", "8"], c: 2 },
+    { q: "Kolik hráčů jednoho týmu je na hřišti při fotbale?", a: ["9", "10", "11", "12"], c: 2 },
+    { q: "Kolik třetin má standardní hokejový zápas?", a: ["2", "3", "4", "5"], c: 1 },
+    { q: "Jak dlouho trvá jedna čistá třetina v ledním hokeji?", a: ["15 minut", "20 minut", "25 minut", "30 minut"], c: 1 },
+    { q: "Jaké startovní číslo nosil na dresu hokejista Jaromír Jágr?", a: ["9", "68", "88", "99"], c: 1 },
+    { q: "Ve kterém sportu se bojuje o slavnou trofej Stanley Cup?", a: ["Basketbal", "Americký fotbal", "Lední hokej", "Baseball"], c: 2 },
+    { q: "Jak se jmenuje nejznámější cyklistický závod světa konaný ve Francii?", a: ["Giro d'Italia", "Vuelta", "Tour de France", "Paříž–Roubaix"], c: 2 },
+    { q: "Jakou barvu má trikot vedoucího závodníka na Tour de France?", a: ["Růžovou", "Žlutou", "Zelenou", "Puntíkovanou"], c: 1 },
+    { q: "Kolik bodů má v šipkách (Darts) střed terče (tzv. Bullseye)?", a: ["25", "50", "60", "100"], c: 1 },
+    { q: "Jaké je nejvyšší možné skóre dosažené třemi šipkami v jednom hodu?", a: ["150", "170", "180", "200"], c: 2 },
+    { q: "Který sprinter drží světový rekord v běhu na 100 metrů (9,58 s)?", a: ["Carl Lewis", "Tyson Gay", "Usain Bolt", "Yohan Blake"], c: 2 },
+    { q: "Která šachová figurka jako jediná dokáže přeskakovat ostatní figurky?", a: ["Střelec", "Věž", "Jezdec (kůň)", "Dáma"], c: 2 },
+    { q: "Jak se v golfu nazývá zahrání jamky o jeden úder lépe, než je norma (par)?", a: ["Eagle", "Birdie", "Bogey", "Albatross"], c: 1 },
+    { q: "Která země vyhrála mistrovství světa ve fotbale v roce 2022 v Kataru?", a: ["Francie", "Brazílie", "Argentina", "Chorvatsko"], c: 2 },
+    { q: "Jak se jmenuje loutkové divadlo, kde vystupují Spejbl a Hurvínek?", a: ["Divadlo Járy Cimrmana", "Divadlo Spejbla a Hurvínka", "Semafor", "Ypsilonka"], c: 1 },
+
+    // --- DALŠÍ OTÁZKY: JÍDLO, PITÍ A RŮZNÉ ---
+    { q: "Z které země pochází pokrm sushi?", a: ["Čína", "Thajsko", "Japonsko", "Vietnam"], c: 2 },
+    { q: "Jaký druh sýra je tradiční součástí řeckého salátu?", a: ["Mozzarella", "Parmezán", "Feta", "Gouda"], c: 2 },
+    { q: "Který nápoj obsahuje účinnou látku kofein?", a: ["Heřmánkový čaj", "Káva", "Rooibos", "Šípkový čaj"], c: 1 },
+    { q: "Z čeho se vyrábí pravý marcipán?", a: ["Z vlašských ořechů", "Z mandlí a cukru", "Z lískových oříšků", "Z kokosu"], c: 1 },
+    { q: "Jak se jmenuje italský dezert z piškotů, kávy a sýra mascarpone?", a: ["Panna cotta", "Tiramisu", "Cannoli", "Gelato"], c: 1 },
+    { q: "Jaké maso je tradičním základem pro pravý vídeňský řízek?", a: ["Vepřové", "Kuřecí", "Telecí", "Krůtí"], c: 2 },
+    { q: "Jakou zeleninu najdeme jako hlavní surovinu v polévce boršč?", a: ["Mrkev", "Červenou řepu", "Špenát", "Dýni"], c: 1 },
+    { q: "Které japonské křenové dochucovadlo má výraznou zelenou barvu a pálivost?", a: ["Zázvor", "Wasabi", "Kimči", "Miso"], c: 1 },
+    { q: "Jaké hlavní ingredience obsahuje koktejl Piña Colada?", a: ["Vodku, džus a limetku", "Rum, kokos a ananas", "Gin, tonik a okurku", "Tequilu a pomeranč"], c: 1 },
+    { q: "Která stupnice měří pálivost chilli papriček?", a: ["Richterova", "Scovilleova", "Beaufortova", "Mohsova"], c: 1 },
+    { q: "Co měří Beaufortova stupnice?", a: ["Tvrdost minerálů", "Rychlost a sílu větru", "Intenzitu zvuku", "Kyselost půdy"], c: 1 },
+    { q: "Jaké římské číslo představuje písmeno C?", a: ["50", "100", "500", "1000"], c: 1 },
+    { q: "Jaké římské číslo představuje písmeno M?", a: ["100", "500", "1000", "5000"], c: 2 },
+    { q: "Kolik minut má jeden celý den (24 hodin)?", a: ["1 200", "1 440", "2 400", "3 600"], c: 1 },
+    { q: "Který měsíc v roce má v běžném roce pouze 28 dní?", a: ["Leden", "Únor", "Červen", "Listopad"], c: 1 },
+    { q: "Kolik stěn má klasická hrací kostka (krychle)?", a: ["4", "6", "8", "12"], c: 1 },
+    { q: "Jaký je součet bodů na jakýchkoli dvou protějších stranách klasické hrací kostky?", a: ["6", "7", "8", "9"], c: 1 },
+    { q: "Co znamená v mezinárodní abecedě Morseovky signál '... --- ...'?", a: ["Konec vysílání", "SOS (Nouzový signál)", "Pozor", "Rozumím"], c: 1 },
+    { q: "Jak se jmenuje fobie ze strachu z výšek?", a: ["Klaustrofobie", "Arachnofobie", "Akrofobie", "Agorafobie"], c: 2 },
+    { q: "Čeho se bojí člověk trpící klaustrofobií?", a: ["Pavouků", "Uzavřených prostor", "Tmy", "Létání"], c: 1 },
+    { q: "Které znamení zvěrokruhu má ve znaku váhy?", a: ["Panna", "Váhy", "Štír", "Blíženci"], c: 1 },
+    { q: "Kolik písmen má současná česká abeceda (včetně písmen s háčky a spřežky CH)?", a: ["26", "34", "42", "48"], c: 2 },
+    { q: "Jaký drahý kámen má typicky sytě zelenou barvu?", a: ["Rubín", "Safír", "Smaragd", "Ametyst"], c: 2 },
+    { q: "Jakou barvu má drahokam rubín?", a: ["Modrou", "Žlutou", "Červenou", "Fialovou"], c: 2 },
+    { q: "Ze které země pochází stavebnice LEGO?", a: ["Švédsko", "Německo", "Dánsko", "Nizozemsko"], c: 2 }
+
+];
+
+document.getElementById("db-count").innerText = QUESTIONS.length;
+
+const BROKERS = [
+    "wss://broker.emqx.io:8084/mqtt",
+    "wss://broker.hivemq.com:8884/mqtt",
+    "wss://test.mosquitto.org:8081/mqtt"
+];
+
+let brokerIndex = 0;
+let client = null;
+let isConnected = false;
+let myId = localStorage.getItem("vv_pid") || "p_" + Math.random().toString(36).substring(2, 9);
+localStorage.setItem("vv_pid", myId);
+
+let myName = localStorage.getItem("vv_name") || "";
+document.getElementById("player-name").value = myName;
+
+let currentPin = null;
+let gameState = null;
+let players = {};
+let usedQuestions = [];
+let connectTimer = null;
+
+function connectBroker() {
+    if (client) {
+        try { client.end(true); } catch (e) {}
+    }
+
+    const url = BROKERS[brokerIndex];
+    document.getElementById("conn-dot").className = "dot";
+    document.getElementById("conn-text").innerText = `Připojování k serveru (${brokerIndex + 1}/${BROKERS.length})...`;
+
+    clearTimeout(connectTimer);
+    connectTimer = setTimeout(() => {
+        if (!isConnected) {
+            tryNextBroker();
+        }
+    }, 4000);
+
+    client = mqtt.connect(url, {
+        clientId: "vv_" + myId + "_" + Math.floor(Math.random() * 10000),
+        clean: true,
+        connectTimeout: 4000,
+        reconnectPeriod: 3000
+    });
+
+    client.on("connect", () => {
+        isConnected = true;
+        clearTimeout(connectTimer);
+        document.getElementById("conn-dot").className = "dot online";
+        document.getElementById("conn-text").innerText = "Online – připraveno";
+
+        if (currentPin) {
+            subscribeToRoom(currentPin, () => {
+                if (gameState) publishGameState(gameState);
+                if (players[myId]) publishMyPlayer(players[myId]);
+            });
+        }
+    });
+
+    client.on("error", () => {
+        if (!isConnected) tryNextBroker();
+    });
+
+    client.on("offline", () => {
+        isConnected = false;
+        document.getElementById("conn-dot").className = "dot";
+        document.getElementById("conn-text").innerText = "Obnovování spojení...";
+    });
+
+    client.on("message", (topic, message) => {
+        if (!currentPin) return;
+        const msgStr = message.toString();
+        if (!msgStr) return;
+
+        try {
+            const data = JSON.parse(msgStr);
+            const prefix = `vyzyvatel_cz_26/${currentPin}/`;
+
+            if (topic === prefix + "game") {
+                if (!gameState || !data.updatedAt || data.updatedAt >= (gameState.updatedAt || 0)) {
+                    gameState = data;
+                    if (gameState.qIndices) {
+                        gameState.qIndices.forEach(idx => {
+                            if (!usedQuestions.includes(idx)) usedQuestions.push(idx);
+                        });
+                    }
+                    renderUI();
+                }
+            } else if (topic === prefix + "sync") {
+                if (data.from !== myId) {
+                    if (gameState) publishGameState(gameState);
+                    if (players[myId]) publishMyPlayer(players[myId]);
+                }
+            } else if (topic.startsWith(prefix + "players/")) {
+                const pid = topic.replace(prefix + "players/", "");
+                if (data.left) {
+                    delete players[pid];
+                } else {
+                    const isNewPlayer = !players[pid];
+                    players[pid] = data;
+                    if (isNewPlayer && pid !== myId && gameState) {
+                        publishGameState(gameState);
+                    }
+                }
+                checkAutoReveal();
+                renderUI();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    });
+}
+
+function tryNextBroker() {
+    brokerIndex = (brokerIndex + 1) % BROKERS.length;
+    connectBroker();
+}
+
+function saveName() {
+    const val = document.getElementById("player-name").value.trim();
+    if (!val) {
+        alert("Zadej prosím svou přezdívku!");
+        return false;
+    }
+    myName = val;
+    localStorage.setItem("vv_name", myName);
+    return true;
+}
+
+function subscribeToRoom(pin, callback) {
+    if (!client || !isConnected) {
+        if (callback) callback();
+        return;
+    }
+    const prefix = `vyzyvatel_cz_26/${pin}/#`;
+    client.subscribe(prefix, { qos: 1 }, () => {
+        if (callback) callback();
+    });
+}
+
+function publishGameState(state) {
+    if (!currentPin) return;
+    gameState = state;
+    renderUI();
+    if (client && isConnected) {
+        client.publish(`vyzyvatel_cz_26/${currentPin}/game`, JSON.stringify(state), { qos: 1, retain: true });
+    }
+}
+
+function publishMyPlayer(extra = {}) {
+    if (!currentPin) return;
+    const current = players[myId] || { id: myId, name: myName, score: 0, answeredRound: -1, answer: null };
+    const updated = { ...current, id: myId, name: myName, ...extra };
+    players[myId] = updated;
+    renderUI();
+    if (client && isConnected) {
+        client.publish(`vyzyvatel_cz_26/${currentPin}/players/${myId}`, JSON.stringify(updated), { qos: 1, retain: true });
+    }
+}
+
+function requestRoomSync() {
+    if (!currentPin || !client || !isConnected) return;
+    client.publish(`vyzyvatel_cz_26/${currentPin}/sync`, JSON.stringify({ from: myId, t: Date.now() }), { qos: 1 });
+}
+
+function getShuffledQuestionIndices(count = 15) {
+    let available = QUESTIONS.map((_, i) => i).filter(i => !usedQuestions.includes(i));
+    if (available.length < count) {
+        usedQuestions = [];
+        available = QUESTIONS.map((_, i) => i);
+    }
+    for (let i = available.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [available[i], available[j]] = [available[j], available[i]];
+    }
+    const selected = available.slice(0, count);
+    selected.forEach(idx => usedQuestions.push(idx));
+    return selected;
+}
+
+function createRoom() {
+    if (!saveName()) return;
+    const pin = Math.floor(1000 + Math.random() * 9000).toString();
+    currentPin = pin;
+    players = {};
+
+    const roundsCount = parseInt(document.getElementById("round-select").value) || 15;
+    const initialGame = {
+        pin: pin,
+        status: "lobby",
+        round: 0,
+        roundsCount: roundsCount,
+        qIndices: getShuffledQuestionIndices(roundsCount),
+        updatedAt: Date.now()
+    };
+
+    // Okamžité zobrazení čekárny v prohlížeči
+    gameState = initialGame;
+    players[myId] = { id: myId, name: myName, score: 0, answeredRound: -1, answer: null };
+    renderUI();
+
+    subscribeToRoom(pin, () => {
+        publishGameState(initialGame);
+        publishMyPlayer({ score: 0, answeredRound: -1, answer: null });
+    });
+}
+
+function changeRoundsCount(val) {
+    const count = parseInt(val) || 15;
+    if (gameState && gameState.status === "lobby") {
+        publishGameState({
+            ...gameState,
+            roundsCount: count,
+            qIndices: getShuffledQuestionIndices(count),
+            updatedAt: Date.now()
+        });
+    }
+}
+
+function joinRoom() {
+    if (!saveName()) return;
+    const pin = document.getElementById("join-pin").value.trim();
+    if (pin.length !== 4) {
+        alert("Zadej 4místný PIN místnosti!");
+        return;
+    }
+    currentPin = pin;
+    players = {};
+
+    // Okamžité přepnutí do čekárny, než dorazí data ze serveru
+    gameState = {
+        pin: pin,
+        status: "lobby",
+        round: 0,
+        roundsCount: 15,
+        qIndices: getShuffledQuestionIndices(15),
+        updatedAt: 0
+    };
+    players[myId] = { id: myId, name: myName, score: 0, answeredRound: -1, answer: null };
+    renderUI();
+
+    subscribeToRoom(pin, () => {
+        publishMyPlayer({ score: 0, answeredRound: -1, answer: null });
+        requestRoomSync();
+    });
+}
+
+function leaveRoom() {
+    if (currentPin && client && isConnected) {
+        const prefix = `vyzyvatel_cz_26/${currentPin}/`;
+        client.publish(`${prefix}players/${myId}`, JSON.stringify({ left: true }), { qos: 1, retain: true });
+        client.unsubscribe(prefix + "#");
+    }
+    currentPin = null;
+    gameState = null;
+    players = {};
+    showScreen("screen-menu");
+    document.getElementById("room-badge").classList.add("hidden");
+}
+
+function startGame() {
+    if (!gameState) return;
+    publishGameState({
+        ...gameState,
+        status: "playing",
+        round: 0,
+        updatedAt: Date.now()
+    });
+}
+
+function submitAnswer(ansIndex) {
+    if (!gameState || gameState.status !== "playing") return;
+    const me = players[myId];
+    if (me && me.answeredRound === gameState.round) return;
+
+    const qIdx = gameState.qIndices[gameState.round];
+    const question = QUESTIONS[qIdx];
+    const isCorrect = (ansIndex === question.c);
+    const newScore = (me ? me.score : 0) + (isCorrect ? 100 : 0);
+
+    publishMyPlayer({
+        score: newScore,
+        answeredRound: gameState.round,
+        answer: ansIndex
+    });
+    checkAutoReveal();
+}
+
+function checkAutoReveal() {
+    if (!gameState || gameState.status !== "playing") return;
+    const pList = Object.values(players);
+    if (pList.length === 0) return;
+
+    const allAnswered = pList.every(p => p.answeredRound === gameState.round);
+    if (allAnswered) {
+        const sortedIds = Object.keys(players).sort();
+        if (sortedIds[0] === myId) {
+            setTimeout(() => {
+                if (gameState && gameState.status === "playing") {
+                    revealResults();
+                }
+            }, 350);
+        }
+    }
+}
+
+function revealResults() {
+    if (!gameState) return;
+    publishGameState({
+        ...gameState,
+        status: "results",
+        updatedAt: Date.now()
+    });
+}
+
+function nextRound() {
+    if (!gameState) return;
+    if (gameState.round + 1 >= gameState.qIndices.length) {
+        publishGameState({
+            ...gameState,
+            status: "finished",
+            updatedAt: Date.now()
+        });
+    } else {
+        publishGameState({
+            ...gameState,
+            status: "playing",
+            round: gameState.round + 1,
+            updatedAt: Date.now()
+        });
+    }
+}
+
+function restartGame() {
+    const count = (gameState && gameState.roundsCount) ? gameState.roundsCount : 15;
+    Object.values(players).forEach(p => {
+        const resetPlayer = { ...p, score: 0, answeredRound: -1, answer: null };
+        players[p.id] = resetPlayer;
+        if (client && isConnected) {
+            client.publish(`vyzyvatel_cz_26/${currentPin}/players/${p.id}`, JSON.stringify(resetPlayer), { qos: 1, retain: true });
+        }
+    });
+
+    publishGameState({
+        pin: currentPin,
+        status: "playing",
+        round: 0,
+        roundsCount: count,
+        qIndices: getShuffledQuestionIndices(count),
+        updatedAt: Date.now()
+    });
+}
+
+function showScreen(id) {
+    ["screen-menu", "screen-lobby", "screen-game", "screen-results"].forEach(s => {
+        document.getElementById(s).classList.toggle("hidden", s !== id);
+    });
+}
+
+function renderUI() {
+    if (!currentPin || !gameState) return;
+
+    document.getElementById("room-badge").classList.remove("hidden");
+    document.getElementById("badge-pin").innerText = currentPin;
+
+    const pList = Object.values(players);
+
+    if (gameState.status === "lobby") {
+        showScreen("screen-lobby");
+        document.getElementById("lobby-pin").innerText = currentPin;
+        document.getElementById("lobby-count").innerText = pList.length;
+        if (gameState.roundsCount) {
+            document.getElementById("round-select").value = gameState.roundsCount.toString();
+        }
+
+        const container = document.getElementById("lobby-players");
+        container.innerHTML = "";
+        pList.forEach(p => {
+            const chip = document.createElement("div");
+            chip.className = "player-chip";
+            chip.innerText = p.name + (p.id === myId ? " (Ty)" : "");
+            container.appendChild(chip);
+        });
+    }
+
+    else if (gameState.status === "playing") {
+        showScreen("screen-game");
+        const round = gameState.round;
+        const total = gameState.qIndices.length;
+        const qObj = QUESTIONS[gameState.qIndices[round]] || QUESTIONS[0];
+
+        const answeredCount = pList.filter(p => p.answeredRound === round).length;
+        document.getElementById("round-info").innerText = `Otázka ${round + 1} / ${total}`;
+        document.getElementById("answered-info").innerText = `Odpovědělo: ${answeredCount} / ${pList.length}`;
+        document.getElementById("question-text").innerText = qObj.q;
+
+        const me = players[myId];
+        const myAnswered = me && me.answeredRound === round;
+
+        const ansContainer = document.getElementById("answers-container");
+        ansContainer.innerHTML = "";
+        const letters = ["A", "B", "C", "D"];
+
+        qObj.a.forEach((ansText, idx) => {
+            const btn = document.createElement("button");
+            btn.className = `ans-btn ans-${idx}` + (myAnswered && me.answer === idx ? " selected" : "");
+            btn.disabled = myAnswered;
+            btn.innerHTML = `<span>${letters[idx]})</span> <span>${ansText}</span>`;
+            btn.onclick = () => submitAnswer(idx);
+            ansContainer.appendChild(btn);
+        });
+
+        const gpContainer = document.getElementById("game-players");
+        gpContainer.innerHTML = "";
+        pList.forEach(p => {
+            const done = p.answeredRound === round;
+            const chip = document.createElement("div");
+            chip.className = "player-chip" + (done ? " answered" : "");
+            chip.innerText = (done ? "✓ " : "⏳ ") + p.name;
+            gpContainer.appendChild(chip);
+        });
+    }
+
+    else if (gameState.status === "results" || gameState.status === "finished") {
+        showScreen("screen-results");
+        const isFinished = gameState.status === "finished" || (gameState.round + 1 >= gameState.qIndices.length);
+        const qObj = QUESTIONS[gameState.qIndices[gameState.round]] || QUESTIONS[0];
+
+        document.getElementById("results-title").innerText = isFinished ? "🏆 Konečné pořadí" : `Výsledky ${gameState.round + 1}. kola`;
+        document.getElementById("correct-answer-text").innerText = qObj.a[qObj.c];
+
+        const sorted = [...pList].sort((a, b) => (b.score || 0) - (a.score || 0));
+        const lb = document.getElementById("leaderboard");
+        lb.innerHTML = "";
+
+        sorted.forEach((p, idx) => {
+            const row = document.createElement("div");
+            row.className = "leaderboard-row" + (p.id === myId ? " me" : "");
+            const medal = idx === 0 ? "🥇 " : idx === 1 ? "🥈 " : idx === 2 ? "🥉 " : `${idx + 1}. `;
+            const answeredCorrectly = (p.answeredRound === gameState.round && p.answer === qObj.c);
+            row.innerHTML = `
+                <div>
+                    <strong>${medal}${p.name}</strong>
+                    <span style="font-size:0.8rem; color:var(--muted); margin-left:6px;">
+                        ${answeredCorrectly ? "(+100 b.)" : ""}
+                    </span>
+                </div>
+                <div style="font-weight:800; color:#818cf8;">${p.score || 0} b.</div>
+            `;
+            lb.appendChild(row);
+        });
+
+        document.getElementById("btn-next-round").classList.toggle("hidden", isFinished);
+        document.getElementById("btn-new-game").classList.toggle("hidden", !isFinished);
+    }
+}
+
+connectBroker();
+</script>
+</body>
+</html>

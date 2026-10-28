@@ -31,9 +31,7 @@
             <h3>Vyber hru pro všechny:</h3>
             <button class="btn-game" data-game="bomba">💣 Horký Brambor (Bomba)</button>
             <button class="btn-game" data-game="slider" style="background: #8b5cf6;">🎚️ Tref Průměr (Slider)</button>
-            <!-- Sem v budoucnu přidáš další tlačítka, např.:
-            <button class="btn-game" data-game="vyzivatel">🧠 Vyzivatel</button>
-            -->
+            <button class="btn-game" data-game="vyzyvatel" style="background: #6366f1;">🧠 Vědomostní Výzva (Kvíz)</button>
         </div>
 
         <p id="waitingMsg" class="pulse-text">Čeká se, až hostitel vybere hru...</p>
@@ -63,7 +61,19 @@
         </div>
     </div>
 
+    <!-- 5. HRA: VĚDOMOSTNÍ VÝZVA (VYZYVATEL) -->
+    <div id="screen-vyzyvatel" class="screen">
+        <!-- Horní lišta pro návrat do lobby (vidí jen Host) -->
+        <div class="host-only-bar" style="display: none;">
+            <button class="btn-small btn-backToLobby">⬅ Zpět do výběru her</button>
+        </div>
+
+        <div id="vyzyvatel-content">
+            <!-- Obsah kvízu se vykresluje dynamicky přes games/vyzyvatel.js -->
+        </div>
+    </div>
+
     <!-- Hlavní skript jako ES6 modul -->
-    <script type="module" src="./app.js?v=3"></script>
+    <script type="module" src="./app.js?v=4"></script>
 </body>
 </html>

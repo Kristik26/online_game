@@ -1,6 +1,7 @@
-import { db, ref, set, get, onValue, update, onDisconnect } from "./firebase-config.js?v=3";
-import { initBomba } from "./games/bomba.js?v=3";
-import { initSlider } from "./games/slider.js?v=3";
+import { db, ref, set, get, onValue, update, onDisconnect } from "./firebase-config.js?v=4";
+import { initBomba } from "./games/bomba.js?v=4";
+import { initSlider } from "./games/slider.js?v=4";
+import { initVyzyvatel } from "./games/vyzyvatel.js?v=4";
 
 // Globální stav hráče
 export const state = {
@@ -82,6 +83,7 @@ function setupUI() {
     // Inicializace herních modulů
     initBomba();
     initSlider();
+    initVyzyvatel();
 }
 
 function startListeners() {
