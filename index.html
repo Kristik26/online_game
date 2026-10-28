@@ -30,8 +30,8 @@
         <div id="hostControls" class="host-panel" style="display: none;">
             <h3>Vyber hru pro všechny:</h3>
             <button class="btn-game" data-game="bomba">💣 Horký Brambor (Bomba)</button>
+            <button class="btn-game" data-game="slider" style="background: #8b5cf6;">🎚️ Tref Průměr (Slider)</button>
             <!-- Sem v budoucnu přidáš další tlačítka, např.:
-            <button class="btn-game" data-game="slider">🎚️ Tref Průměr</button>
             <button class="btn-game" data-game="vyzivatel">🧠 Vyzivatel</button>
             -->
         </div>
@@ -48,6 +48,18 @@
 
         <div id="bomba-content">
             <!-- Obsah hry Bomba se vykresluje dynamicky přes games/bomba.js -->
+        </div>
+    </div>
+
+    <!-- 4. HRA: TREF PRŮMĚR (SLIDER) -->
+    <div id="screen-slider" class="screen">
+        <!-- Horní lišta pro návrat do lobby (vidí jen Host) -->
+        <div class="host-only-bar" style="display: none;">
+            <button class="btn-small btn-backToLobby">⬅ Zpět do výběru her</button>
+        </div>
+
+        <div id="slider-content">
+            <!-- Obsah hry Slider se vykresluje dynamicky přes games/slider.js -->
         </div>
     </div>
 
