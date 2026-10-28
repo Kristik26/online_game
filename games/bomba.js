@@ -424,7 +424,7 @@ function renderRunning(container, data) {
         `;
 
         document.getElementById("btnPassBomb").addEventListener("click", () => {
-            passBomb(data.holder);
+            passBomb(data.holder, data.mode, data.topic);
         });
     } else {
         document.body.className = "";
@@ -473,6 +473,36 @@ function renderExploded(container, data) {
 
 // --- HERNÍ AKCE ---
 
+function generateTask(selectedMode = "mix", previousTopic = null) {
+    let categoryLabel = "";
+    let taskText = "";
+
+    do {
+        // Pokud dal Host "mix", náhodně vylosujeme buď téma, nebo slabiku
+        let finalMode = selectedMode;
+        if (selectedMode === "mix") {
+            finalMode = Math.random() < 0.5 ? "topics" : "syllables";
+        }
+
+        if (finalMode === "topics") {
+            categoryLabel = "Vymysli slovo na téma:";
+            taskText = TOPICS[Math.floor(Math.random() * TOPICS.length)];
+        } else if (finalMode === "syllables") {
+            // Klasická bomba: Určí se i kde má slabika ve slově být
+            const positions = [
+                "Slovo ZAČÍNÁ na:",
+                "Slovo KONČÍ na:",
+                "Slovo OBSAHUJE KDEKOLIV:"
+            ];
+            categoryLabel = positions[Math.floor(Math.random() * positions.length)];
+            const syl = SYLLABLES[Math.floor(Math.random() * SYLLABLES.length)];
+            taskText = `"${syl}"`;
+        }
+    } while (taskText === previousTopic);
+
+    return { categoryLabel, topic: taskText };
+}
+
 function startNewRound(selectedMode = "mix") {
     if (state.players.length === 0) return;
 
@@ -480,40 +510,19 @@ function startNewRound(selectedMode = "mix") {
     const randomDurationMs = (Math.floor(Math.random() * 23) + 15) * 1000;
     const explodeAt = Date.now() + randomDurationMs;
 
-    // Pokud dal Host "mix", náhodně vylosujeme buď téma, nebo slabiku
-    let finalMode = selectedMode;
-    if (selectedMode === "mix") {
-        finalMode = Math.random() < 0.5 ? "topics" : "syllables";
-    }
-
-    let categoryLabel = "";
-    let taskText = "";
-
-    if (finalMode === "topics") {
-        categoryLabel = "Vymysli slovo na téma:";
-        taskText = TOPICS[Math.floor(Math.random() * TOPICS.length)];
-    } else if (finalMode === "syllables") {
-        // Klasická bomba: Určí se i kde má slabika ve slově být
-        const positions = [
-            "Slovo ZAČÍNÁ na:",
-            "Slovo KONČÍ na:",
-            "Slovo OBSAHUJE KDEKOLIV:"
-        ];
-        categoryLabel = positions[Math.floor(Math.random() * positions.length)];
-        const syl = SYLLABLES[Math.floor(Math.random() * SYLLABLES.length)];
-        taskText = `"${syl}"`;
-    }
+    const { categoryLabel, topic } = generateTask(selectedMode);
 
     set(ref(db, `rooms/${state.roomId}/games/bomba`), {
         status: "running",
+        mode: selectedMode,
         categoryLabel: categoryLabel,
-        topic: taskText,
+        topic: topic,
         holder: randomPlayer,
         explodeAt: explodeAt
     });
 }
 
-function passBomb(currentHolder) {
+function passBomb(currentHolder, currentMode = "mix", currentTopic = null) {
     // Vybereme kohokoliv jiného než toho, kdo bombu právě drží
     let candidates = state.players.filter(p => p !== currentHolder);
     
@@ -523,9 +532,12 @@ function passBomb(currentHolder) {
     }
 
     const nextHolder = candidates[Math.floor(Math.random() * candidates.length)];
+    const { categoryLabel, topic } = generateTask(currentMode, currentTopic);
 
     update(ref(db, `rooms/${state.roomId}/games/bomba`), {
-        holder: nextHolder
+        holder: nextHolder,
+        categoryLabel: categoryLabel,
+        topic: topic
     });
 }
 
