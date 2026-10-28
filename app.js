@@ -1,7 +1,7 @@
-import { db, ref, set, get, onValue, update, onDisconnect } from "./firebase-config.js?v=4";
-import { initBomba } from "./games/bomba.js?v=4";
-import { initSlider } from "./games/slider.js?v=4";
-import { initVyzyvatel } from "./games/vyzyvatel.js?v=4";
+import { db, ref, set, get, onValue, update, onDisconnect, remove } from "./firebase-config.js?v=5";
+import { initBomba } from "./games/bomba.js?v=5";
+import { initSlider } from "./games/slider.js?v=5";
+import { initVyzyvatel } from "./games/vyzyvatel.js?v=5";
 
 // Globální stav hráče
 export const state = {
@@ -10,6 +10,22 @@ export const state = {
     isHost: false,
     players: []
 };
+
+// Úklid prázdných místností v databázi (pokud v nich nezůstal žádný hráč)
+async function cleanupEmptyRooms() {
+    try {
+        const roomsSnap = await get(ref(db, "rooms"));
+        if (!roomsSnap.exists()) return;
+        const rooms = roomsSnap.val();
+        for (const [rId, rData] of Object.entries(rooms)) {
+            if (!rData.players || Object.keys(rData.players).length === 0) {
+                await remove(ref(db, `rooms/${rId}`));
+            }
+        }
+    } catch (e) {
+        console.error("Chyba při úklidu prázdných místností:", e);
+    }
+}
 
 // Přihlášení do místnosti
 document.getElementById("btnJoin").addEventListener("click", async () => {
@@ -24,11 +40,14 @@ document.getElementById("btnJoin").addEventListener("click", async () => {
     state.myName = nameInput;
     state.roomId = roomInput;
 
+    // Nejprve promažeme případné osiřelé prázdné místnosti v databázi
+    await cleanupEmptyRooms();
+
     const roomRef = ref(db, `rooms/${state.roomId}`);
     const snapshot = await get(roomRef);
 
-    if (!snapshot.exists()) {
-        // Místnost neexistuje -> zakládáme ji a stáváme se Hostem
+    if (!snapshot.exists() || !snapshot.val().players) {
+        // Místnost neexistuje (nebo byla prázdná) -> zakládáme ji a stáváme se Hostem
         state.isHost = true;
         await set(roomRef, {
             host: state.myName,
@@ -40,8 +59,9 @@ document.getElementById("btnJoin").addEventListener("click", async () => {
     } else {
         // Místnost existuje -> přidáme se do ní
         const roomData = snapshot.val();
-        if (roomData.host === state.myName) {
-            state.isHost = true; // Pokud se Host omylem odpojil a vrátil pod stejným jménem
+        if (roomData.host === state.myName || !roomData.players[roomData.host]) {
+            state.isHost = true;
+            await update(roomRef, { host: state.myName });
         }
         await update(ref(db, `rooms/${state.roomId}/players`), {
             [state.myName]: { joinedAt: Date.now() }
@@ -55,15 +75,19 @@ document.getElementById("btnJoin").addEventListener("click", async () => {
     startListeners();
 });
 
-function setupUI() {
-    document.getElementById("displayRoomId").innerText = state.roomId;
-    document.getElementById("displayPlayerName").innerText = state.myName;
-
+function updateHostUI() {
     if (state.isHost) {
         document.getElementById("hostControls").style.display = "block";
         document.getElementById("waitingMsg").style.display = "none";
         document.querySelectorAll(".host-only-bar").forEach(el => el.style.display = "block");
     }
+}
+
+function setupUI() {
+    document.getElementById("displayRoomId").innerText = state.roomId;
+    document.getElementById("displayPlayerName").innerText = state.myName;
+
+    updateHostUI();
 
     // Nabindování tlačítek pro spuštění her v Lobby
     document.querySelectorAll("#hostControls .btn-game").forEach(btn => {
@@ -73,12 +97,18 @@ function setupUI() {
         });
     });
 
-    // Nabindování tlačítek "Zpět do Lobby"
+    // Nabindování tlačítek "Zpět do Lobby" (ukončí aktuální hru a smaže ji z DB)
     document.querySelectorAll(".btn-backToLobby").forEach(btn => {
         btn.addEventListener("click", () => {
             switchPortalState("lobby");
         });
     });
+
+    // Tlačítko pro opuštění místnosti
+    const btnLeave = document.getElementById("btnLeaveRoom");
+    if (btnLeave) {
+        btnLeave.addEventListener("click", leaveRoom);
+    }
 
     // Inicializace herních modulů
     initBomba();
@@ -87,8 +117,11 @@ function setupUI() {
 }
 
 function startListeners() {
-    // 1. Sledování seznamu hráčů
-    onValue(ref(db, `rooms/${state.roomId}/players`), (snapshot) => {
+    const roomRef = ref(db, `rooms/${state.roomId}`);
+    const myPlayerRef = ref(db, `rooms/${state.roomId}/players/${state.myName}`);
+
+    // 1. Sledování seznamu hráčů a automatické smazání místnosti, když v ní nikdo nezůstane
+    onValue(ref(db, `rooms/${state.roomId}/players`), async (snapshot) => {
         const playersObj = snapshot.val() || {};
         state.players = Object.keys(playersObj);
 
@@ -96,6 +129,29 @@ function startListeners() {
         listEl.innerHTML = state.players
             .map(p => `<li>${p === state.myName ? "⭐ " + p : p}</li>`)
             .join("");
+
+        // Pokud jsem v místnosti úplně sám (poslední hráč), nastavíme onDisconnect na celou místnost,
+        // aby se po mém odpojení smazala celá místnost včetně her z databáze.
+        if (state.players.length === 1 && state.players[0] === state.myName) {
+            onDisconnect(roomRef).remove();
+        } else if (state.players.length > 1) {
+            // Pokud je v místnosti víc lidí, při odpojení mažeme jen sebe, ne celou místnost
+            onDisconnect(roomRef).cancel();
+            onDisconnect(myPlayerRef).remove();
+        }
+
+        // Pokud původní Host odešel a já jsem první v seznamu zbývajících hráčů, převezmu roli Hosta
+        if (!state.isHost && state.players.length > 0 && state.players[0] === state.myName) {
+            const roomSnap = await get(roomRef);
+            if (roomSnap.exists()) {
+                const currentHost = roomSnap.val().host;
+                if (!playersObj[currentHost]) {
+                    state.isHost = true;
+                    updateHostUI();
+                    await update(roomRef, { host: state.myName });
+                }
+            }
+        }
     });
 
     // 2. Sledování aktivní obrazovky (Router)
@@ -115,8 +171,36 @@ function startListeners() {
     });
 }
 
-// Funkce pro Hosta na přepnutí hry
+// Funkce pro Hosta na přepnutí hry (při návratu do lobby smaže ukončenou hru z databáze)
 export function switchPortalState(newState) {
     if (!state.isHost) return;
-    update(ref(db, `rooms/${state.roomId}`), { activeState: newState });
+    if (newState === "lobby") {
+        update(ref(db, `rooms/${state.roomId}`), {
+            activeState: "lobby",
+            games: null
+        });
+    } else {
+        update(ref(db, `rooms/${state.roomId}`), {
+            activeState: newState
+        });
+    }
+}
+
+// Ruční opuštění místnosti
+async function leaveRoom() {
+    const roomRef = ref(db, `rooms/${state.roomId}`);
+    const myPlayerRef = ref(db, `rooms/${state.roomId}/players/${state.myName}`);
+
+    onDisconnect(roomRef).cancel();
+    onDisconnect(myPlayerRef).cancel();
+
+    if (state.players.length <= 1) {
+        // Jsme poslední hráč -> smažeme rovnou celou místnost z databáze
+        await remove(roomRef);
+    } else {
+        // Jinak smažeme ze seznamu jen sebe
+        await remove(myPlayerRef);
+    }
+
+    window.location.reload();
 }

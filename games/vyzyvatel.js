@@ -1,5 +1,5 @@
-import { db, ref, set, onValue, update } from "../firebase-config.js?v=4";
-import { state } from "../app.js?v=4";
+import { db, ref, set, onValue, update } from "../firebase-config.js?v=5";
+import { state, switchPortalState } from "../app.js?v=5";
 
 const QUESTIONS = [
     // Věda, vesmír a příroda
@@ -531,8 +531,8 @@ function renderResults(container, data) {
                     <button id="btnQuizRestart" class="btn-game" style="margin-top: 18px; background: #6366f1;">
                         🔄 Hrát znovu (nové otázky)
                     </button>
-                    <button id="btnQuizSettings" class="btn-small" style="margin-top: 8px;">
-                        ⚙️ Změnit počet otázek
+                    <button id="btnQuizEndToLobby" class="btn-small" style="margin-top: 8px; background: #ef4444;">
+                        🏁 Ukončit hru (smazat a zpět do lobby)
                     </button>
                 ` : `
                     <button id="btnQuizNext" class="btn-game" style="margin-top: 18px; background: #6366f1;">
@@ -560,12 +560,10 @@ function renderResults(container, data) {
             });
         }
 
-        const btnSettings = document.getElementById("btnQuizSettings");
-        if (btnSettings) {
-            btnSettings.addEventListener("click", () => {
-                update(ref(db, `rooms/${state.roomId}/games/vyzyvatel`), {
-                    status: "waiting"
-                });
+        const btnEndToLobby = document.getElementById("btnQuizEndToLobby");
+        if (btnEndToLobby) {
+            btnEndToLobby.addEventListener("click", () => {
+                switchPortalState("lobby");
             });
         }
     }

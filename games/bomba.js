@@ -1,5 +1,5 @@
-import { db, ref, set, onValue, update } from "../firebase-config.js?v=4";
-import { state } from "../app.js?v=4";
+import { db, ref, set, onValue, update } from "../firebase-config.js?v=5";
+import { state } from "../app.js?v=5";
 
 // Databáze párty témat (žádné složité přemýšlení)
 // Databáze párty témat (žádné složité přemýšlení)
