@@ -32,6 +32,7 @@
             <button class="btn-game" data-game="bomba">💣 Horký Brambor (Bomba)</button>
             <button class="btn-game" data-game="slider" style="background: #8b5cf6;">🎚️ Tref Průměr (Slider)</button>
             <button class="btn-game" data-game="vyzyvatel" style="background: #6366f1;">🧠 Vědomostní Výzva (Kvíz)</button>
+            <button class="btn-game" data-game="dilema" style="background: #ec4899;">⚖️ Absolutní Dilema (Co bys radši?)</button>
         </div>
 
         <p id="waitingMsg" class="pulse-text">Čeká se, až hostitel vybere hru...</p>
@@ -77,7 +78,19 @@
         </div>
     </div>
 
+    <!-- 6. HRA: ABSOLUTNÍ DILEMA -->
+    <div id="screen-dilema" class="screen">
+        <!-- Horní lišta pro návrat do lobby (vidí jen Host) -->
+        <div class="host-only-bar" style="display: none;">
+            <button class="btn-small btn-backToLobby">⬅ Zpět do výběru her</button>
+        </div>
+
+        <div id="dilema-content">
+            <!-- Obsah hry Dilema se vykresluje dynamicky přes games/dilema.js -->
+        </div>
+    </div>
+
     <!-- Hlavní skript jako ES6 modul -->
-    <script type="module" src="./app.js?v=5"></script>
+    <script type="module" src="./app.js?v=6"></script>
 </body>
 </html>

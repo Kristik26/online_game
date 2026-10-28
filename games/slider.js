@@ -1,5 +1,5 @@
-import { db, ref, set, onValue, update } from "../firebase-config.js?v=5";
-import { state } from "../app.js?v=5";
+import { db, ref, set, onValue, update } from "../firebase-config.js?v=6";
+import { state } from "../app.js?v=6";
 
 // Databáze subjektivních párty otázek ({player} se nahradí jménem náhodného hráče)
 const QUESTIONS = [

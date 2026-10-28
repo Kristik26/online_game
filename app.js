@@ -1,7 +1,8 @@
-import { db, ref, set, get, onValue, update, onDisconnect, remove } from "./firebase-config.js?v=5";
-import { initBomba } from "./games/bomba.js?v=5";
-import { initSlider } from "./games/slider.js?v=5";
-import { initVyzyvatel } from "./games/vyzyvatel.js?v=5";
+import { db, ref, set, get, onValue, update, onDisconnect, remove } from "./firebase-config.js?v=6";
+import { initBomba } from "./games/bomba.js?v=6";
+import { initSlider } from "./games/slider.js?v=6";
+import { initVyzyvatel } from "./games/vyzyvatel.js?v=6";
+import { initDilema } from "./games/dilema.js?v=6";
 
 // Globální stav hráče
 export const state = {
@@ -114,6 +115,7 @@ function setupUI() {
     initBomba();
     initSlider();
     initVyzyvatel();
+    initDilema();
 }
 
 function startListeners() {
