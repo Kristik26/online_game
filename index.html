@@ -33,6 +33,7 @@
             <button class="btn-game" data-game="slider" style="background: #8b5cf6;">🎚️ Tref Průměr (Slider)</button>
             <button class="btn-game" data-game="vyzyvatel" style="background: #6366f1;">🧠 Vědomostní Výzva (Kvíz)</button>
             <button class="btn-game" data-game="dilema" style="background: #ec4899;">⚖️ Absolutní Dilema (Co bys radši?)</button>
+            <button class="btn-game" data-game="kralove" style="background: #eab308; color: #000000;">👑 Králové (Karty & Pravidla)</button>
         </div>
 
         <p id="waitingMsg" class="pulse-text">Čeká se, až hostitel vybere hru...</p>
@@ -90,7 +91,19 @@
         </div>
     </div>
 
+    <!-- 7. HRA: KRÁLOVÉ (PRAVIDLA) -->
+    <div id="screen-kralove" class="screen">
+        <!-- Horní lišta pro návrat do lobby (vidí jen Host) -->
+        <div class="host-only-bar" style="display: none;">
+            <button class="btn-small btn-backToLobby">⬅ Zpět do výběru her</button>
+        </div>
+
+        <div id="kralove-content">
+            <!-- Obsah hry Králové se vykresluje dynamicky přes games/kralove.js -->
+        </div>
+    </div>
+
     <!-- Hlavní skript jako ES6 modul -->
-    <script type="module" src="./app.js?v=6"></script>
+    <script type="module" src="./app.js?v=7"></script>
 </body>
 </html>

@@ -523,3 +523,170 @@ input[type="range"].party-slider::-moz-range-thumb {
     font-size: 0.9rem;
     color: #d1d5db;
 }
+
+/* --- STYLY PRO HRU KRÁLOVÉ (KARTY & PRAVIDLA) --- */
+.king-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1e1e22;
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    margin-bottom: 14px;
+    border: 1px solid #2c2c30;
+}
+
+.king-card-wrap {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 18px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    animation: cardPop 0.28s ease-out;
+}
+
+.king-card-wrap.fourth-king-alert {
+    background: rgba(234, 88, 12, 0.25);
+    border: 3px solid #f59e0b;
+}
+
+@keyframes cardPop {
+    0% { transform: scale(0.85); opacity: 0.3; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.king-drawn-by {
+    font-size: 0.95rem;
+    color: #9ca3af;
+    margin-bottom: 10px;
+}
+
+.playing-card {
+    width: 135px;
+    height: 190px;
+    background: #ffffff;
+    border-radius: 16px;
+    margin: 0 auto 14px auto;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.55);
+    border: 3px solid #e5e7eb;
+}
+
+.playing-card.card-red { color: #dc2626; }
+.playing-card.card-black { color: #111827; }
+
+.card-corner {
+    font-size: 1.25rem;
+    font-weight: 900;
+    line-height: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.card-corner.bottom-right {
+    align-items: flex-end;
+    transform: rotate(180deg);
+}
+
+.card-center {
+    font-size: 2.9rem;
+    font-weight: 900;
+    text-align: center;
+}
+
+.king-rule-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #fbbf24;
+    margin-bottom: 6px;
+}
+
+.king-rule-desc {
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: #f3f4f6;
+}
+
+.btn-draw-card {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    color: #000000;
+    font-size: 1.35rem;
+    font-weight: 900;
+    padding: 22px 18px;
+    border-radius: 18px;
+    box-shadow: 0 8px 20px rgba(234, 179, 8, 0.35);
+}
+
+.turn-waiting-box {
+    background: #1e1e22;
+    padding: 14px;
+    border-radius: 14px;
+    border: 1px dashed #3f3f46;
+    font-size: 1.05rem;
+}
+
+.king-statuses-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 14px;
+}
+
+.king-status-badge {
+    background: #27272a;
+    border: 1px solid #3f3f46;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+}
+
+.king-rules-board {
+    background: #1e1e22;
+    border: 1px solid #3f3f46;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-top: 14px;
+    text-align: left;
+}
+
+.king-rules-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 0.92rem;
+    color: #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.rule-creator-box {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 12px;
+    border-radius: 14px;
+    margin-top: 14px;
+    border: 1px solid #fbbf24;
+}
+
+.preset-rules-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.btn-preset-rule {
+    max-width: 100%;
+    padding: 10px 12px;
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    background: #27272a;
+    color: #ffffff;
+    border: 1px solid #3f3f46;
+    border-radius: 10px;
+    text-align: left;
+}

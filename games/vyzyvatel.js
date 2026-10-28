@@ -1,5 +1,5 @@
-import { db, ref, set, onValue, update } from "../firebase-config.js?v=6";
-import { state, switchPortalState } from "../app.js?v=6";
+import { db, ref, set, onValue, update } from "../firebase-config.js?v=7";
+import { state, switchPortalState } from "../app.js?v=7";
 
 const QUESTIONS = [
     // Věda, vesmír a příroda
