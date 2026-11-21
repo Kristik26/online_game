@@ -1,5 +1,5 @@
-import { db, ref, set, onValue, update } from "../firebase-config.js?v=8";
-import { state } from "../app.js?v=8";
+import { db, ref, set, onValue, update } from "../firebase-config.js?v=12";
+import { state } from "../app.js?v=12";
 
 const SUITS = {
     H: { key: "H", symbol: "♥️", color: "red", order: 0 },
@@ -274,28 +274,37 @@ function drawFromDeck() {
 
     const deck = [...toArr(latestData.deck)];
     let discard = [...toArr(latestData.discard)];
+    let reshuffled = false;
 
-    if (deck.length === 0 && discard.length > 1) {
-        const top = discard.pop();
-        for (let i = discard.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [discard[i], discard[j]] = [discard[j], discard[i]];
+    const reshuffleDiscard = () => {
+        if (deck.length === 0 && discard.length > 1) {
+            const top = discard.pop();
+            for (let i = discard.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [discard[i], discard[j]] = [discard[j], discard[i]];
+            }
+            deck.push(...discard);
+            discard = [top];
+            reshuffled = true;
         }
-        deck.push(...discard);
-        discard = [top];
-    }
+    };
 
+    reshuffleDiscard();
     if (deck.length === 0) return;
 
     const card = deck.pop();
     const newHand = [...toArr(latestData.hands?.[state.myName]), card];
+
+    // Pokud se právě dobrala poslední karta, rovnou zamícháme odhozené karty do nového balíčku
+    reshuffleDiscard();
+    const reshuffleNote = reshuffled ? " (🔄 Odehrané karty byly zamíchány do nového balíčku!)" : "";
 
     update(ref(db, `rooms/${state.roomId}/games/zolik`), {
         deck,
         discard,
         [`hands/${state.myName}`]: newHand,
         turnPhase: "play",
-        lastAction: `${state.myName} si líznul(a) kartu z balíčku.`
+        lastAction: `${state.myName} si líznul(a) kartu z balíčku.${reshuffleNote}`
     });
 }
 
@@ -349,7 +358,7 @@ function handleMeldSelected(container) {
     const res = validateMeld(selectedCards);
 
     if (!res.valid) {
-        uiError = "Neplatná skupina! Potřebuješ postupku stejné barvy nebo trojici/čtveřici stejné hodnoty (min. 2 pravé karty).";
+        uiError = "Neplatná skupina! Potřebuješ postupku stejného znaku nebo trojici/čtveřici stejné hodnoty (min. 2 pravé karty).";
         renderPlaying(container, latestData);
         return;
     }
@@ -753,7 +762,7 @@ function renderPlaying(container, data) {
                     <div class="zolik-hand-header">
                         <span>Tvoje ruka (${effectiveHand.length}):</span>
                         <div style="display: flex; gap: 6px;">
-                            <button id="btnSortSuit" class="btn-sort ${handSortMode === "suit" ? "active" : ""}">🎨 Barvy</button>
+                            <button id="btnSortSuit" class="btn-sort ${handSortMode === "suit" ? "active" : ""}">🃏 Znaky</button>
                             <button id="btnSortRank" class="btn-sort ${handSortMode === "rank" ? "active" : ""}">🔢 Hodnoty</button>
                         </div>
                     </div>

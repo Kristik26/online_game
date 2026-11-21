@@ -1,22 +1,27 @@
-import { db, ref, set, onValue, update } from "../firebase-config.js?v=8";
-import { state } from "../app.js?v=8";
+import { db, ref, set, onValue, update } from "../firebase-config.js?v=12";
+import { state } from "../app.js?v=12";
 
 const SUITS = {
     srdce: { key: "srdce", symbol: "♥️", name: "Srdce", color: "red" },
-    kule: { key: "kule", symbol: "♦️", name: "Kule", color: "red" },
-    listy: { key: "listy", symbol: "♠️", name: "Listy", color: "black" },
-    zaludy: { key: "zaludy", symbol: "♣️", name: "Žaludy", color: "black" }
+    kule: { key: "kule", symbol: "♦️", name: "Kára", color: "red" },
+    listy: { key: "listy", symbol: "♠️", name: "Piky", color: "black" },
+    zaludy: { key: "zaludy", symbol: "♣️", name: "Kříže", color: "black" }
 };
 
 const SUIT_KEYS = ["srdce", "kule", "listy", "zaludy"];
-const RANKS = ["7", "8", "9", "10", "Sp", "Sv", "K", "A"];
+const RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"];
 const RANK_NAMES = {
+    "2": "Dvojka",
+    "3": "Trojka",
+    "4": "Čtyřka",
+    "5": "Pětka",
+    "6": "Šestka",
     "7": "Sedma",
     "8": "Osma",
     "9": "Devítka",
     "10": "Desítka",
-    "Sp": "Spodek",
-    "Sv": "Svršek",
+    "J": "Kluk",
+    "Q": "Královna",
     "K": "Král",
     "A": "Eso"
 };
@@ -107,26 +112,42 @@ function startNewGame() {
     });
 }
 
+function replenishDeckIfEmpty(deck, discard) {
+    if (deck.length === 0 && discard.length > 1) {
+        const top = discard.pop();
+        for (let j = discard.length - 1; j > 0; j--) {
+            const k = Math.floor(Math.random() * (j + 1));
+            [discard[j], discard[k]] = [discard[k], discard[j]];
+        }
+        deck.push(...discard);
+        return { deck, discard: [top], reshuffled: true };
+    }
+    return { deck, discard, reshuffled: false };
+}
+
 function drawFromPiles(deckArr, discardArr, count) {
-    const deck = [...deckArr];
+    let deck = [...deckArr];
     let discard = [...discardArr];
     const drawn = [];
+    let reshuffled = false;
 
     for (let i = 0; i < count; i++) {
-        if (deck.length === 0 && discard.length > 1) {
-            const top = discard.pop();
-            for (let j = discard.length - 1; j > 0; j--) {
-                const k = Math.floor(Math.random() * (j + 1));
-                [discard[j], discard[k]] = [discard[k], discard[j]];
-            }
-            deck.push(...discard);
-            discard = [top];
-        }
+        const res = replenishDeckIfEmpty(deck, discard);
+        deck = res.deck;
+        discard = res.discard;
+        if (res.reshuffled) reshuffled = true;
+
         if (deck.length === 0) break;
         drawn.push(deck.pop());
+
+        // Pokud se právě dobrala poslední karta, rovnou zamícháme odhozené karty do nového balíčku
+        const afterRes = replenishDeckIfEmpty(deck, discard);
+        deck = afterRes.deck;
+        discard = afterRes.discard;
+        if (afterRes.reshuffled) reshuffled = true;
     }
 
-    return { drawn, deck, discard };
+    return { drawn, deck, discard, reshuffled };
 }
 
 function canPlayCard(card, data) {
@@ -142,7 +163,7 @@ function canPlayCard(card, data) {
         return card.rank === "A";
     }
 
-    return card.rank === "Sv" || card.suit === data.activeSuit || card.rank === topCard.rank;
+    return card.rank === "Q" || card.suit === data.activeSuit || card.rank === topCard.rank;
 }
 
 function playCard(cardId) {
@@ -178,7 +199,7 @@ function playCard(cardId) {
         return;
     }
 
-    if (card.rank === "Sv") {
+    if (card.rank === "Q") {
         update(ref(db, `rooms/${state.roomId}/games/prsi`), {
             [`hands/${state.myName}`]: newHand,
             discard: newDiscard,
@@ -186,7 +207,7 @@ function playCard(cardId) {
             pendingDraw: 0,
             pendingSkip: false,
             choosingSuitBy: state.myName,
-            lastAction: `${state.myName} vynesl(a) Svrška ${suitInfo.symbol} a vybírá barvu...`
+            lastAction: `${state.myName} vynesl(a) Královnu (Q) ${suitInfo.symbol} a vybírá znak...`
         });
         return;
     }
@@ -225,7 +246,7 @@ function chooseSuit(suitKey) {
         activeSuit: suitKey,
         choosingSuitBy: null,
         currentTurnIndex: nextTurnIndex,
-        lastAction: `${state.myName} změnil(a) barvu na ${suitInfo.symbol} ${suitInfo.name}.`
+        lastAction: `${state.myName} změnil(a) znak na ${suitInfo.symbol} ${suitInfo.name}.`
     });
 }
 
@@ -247,12 +268,13 @@ function passOrDraw() {
     }
 
     const drawCount = (latestData.pendingDraw || 0) > 0 ? latestData.pendingDraw : 1;
-    const { drawn, deck, discard } = drawFromPiles(
+    const { drawn, deck, discard, reshuffled } = drawFromPiles(
         toArr(latestData.deck),
         toArr(latestData.discard),
         drawCount
     );
     const myHand = [...toArr(latestData.hands?.[state.myName]), ...drawn];
+    const reshuffleNote = reshuffled ? " (🔄 Odehrané karty byly zamíchány do nového balíčku!)" : "";
 
     update(ref(db, `rooms/${state.roomId}/games/prsi`), {
         [`hands/${state.myName}`]: myHand,
@@ -260,7 +282,7 @@ function passOrDraw() {
         discard,
         pendingDraw: 0,
         currentTurnIndex: nextTurnIndex,
-        lastAction: `${state.myName} si líznul(a) ${drawn.length} ${drawn.length === 1 ? "kartu" : drawn.length < 5 ? "karty" : "karet"}.`
+        lastAction: `${state.myName} si líznul(a) ${drawn.length} ${drawn.length === 1 ? "kartu" : drawn.length < 5 ? "karty" : "karet"}.${reshuffleNote}`
     });
 }
 
@@ -281,9 +303,9 @@ function renderWaiting(container) {
     container.innerHTML = `
         <div class="bomba-box">
             <h1>🃏 Prší</h1>
-            <p>Klasická česká karetní hra (32 karet). Zbav se všech karet v ruce jako první!</p>
+            <p>Klasická hospodská karetní hra (52 žolíkových karet: 2 až Eso). Zbav se všech karet v ruce jako první!</p>
             <p style="color: #9ca3af; font-size: 0.95rem;">
-                <strong>7</strong> = +2 karty (lze přebít) • <strong>Eso</strong> = stojíš (lze přebít) • <strong>Svršek</strong> = mění barvu
+                <strong>7</strong> = +2 karty (lze přebít) • <strong>Eso</strong> = stojíš (lze přebít) • <strong>Královna (Q)</strong> = mění znak
             </p>
             ${state.isHost
                 ? `<button id="btnStartPrsi" class="btn-game" style="margin-top: 20px; background: #dc2626;">🃏 Rozdat karty (Prší)</button>`
@@ -347,7 +369,7 @@ function renderPlaying(container, data) {
 
     const suitPickerHtml = data.choosingSuitBy === state.myName ? `
         <div class="prsi-suit-picker">
-            <div style="font-weight: 800; color: #fbbf24; margin-bottom: 10px;">Vyber novou barvu:</div>
+            <div style="font-weight: 800; color: #fbbf24; margin-bottom: 10px;">Vyber nový znak:</div>
             <div class="prsi-suit-grid">
                 ${SUIT_KEYS.map(key => {
                     const s = SUITS[key];
@@ -392,7 +414,7 @@ function renderPlaying(container, data) {
                 <div class="prsi-pile-col">
                     ${topCardHtml}
                     <div class="prsi-active-suit-badge">
-                        Barva: <span class="${activeSuit.color === "red" ? "suit-text-red" : "suit-text-light"}">${activeSuit.symbol} ${activeSuit.name}</span>
+                        Znak: <span class="${activeSuit.color === "red" ? "suit-text-red" : "suit-text-light"}">${activeSuit.symbol} ${activeSuit.name}</span>
                     </div>
                 </div>
             </div>
@@ -402,7 +424,7 @@ function renderPlaying(container, data) {
             ${!isSpectator ? `
                 <div class="prsi-turn-status ${isMyTurn ? "my-turn-banner" : ""}">
                     ${data.choosingSuitBy
-                        ? (data.choosingSuitBy === state.myName ? "🎨 Vyber novou barvu výše!" : `🎨 ${data.choosingSuitBy} vybírá barvu...`)
+                        ? (data.choosingSuitBy === state.myName ? "🃏 Vyber nový znak výše!" : `🃏 ${data.choosingSuitBy} vybírá znak...`)
                         : (isMyTurn ? "🔥 Jsi na řadě! Vynes kartu nebo lízni." : `⏳ Na řadě je: ${currentTurn}`)
                     }
                 </div>

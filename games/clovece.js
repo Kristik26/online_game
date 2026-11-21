@@ -1,5 +1,5 @@
-import { db, ref, set, onValue, update } from "../firebase-config.js?v=8";
-import { state } from "../app.js?v=8";
+import { db, ref, set, onValue, update } from "../firebase-config.js?v=12";
+import { state } from "../app.js?v=12";
 
 const COLORS = [
     { key: "red", name: "Červená", emoji: "🔴", hex: "#ef4444" },
@@ -33,8 +33,12 @@ const BASES = [
 ];
 
 const DICE_FACES = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"];
+const START_ARROWS = ["➔", "⬇", "⬅", "⬆"];
 
 let latestData = null;
+let prevPieces = null;
+let prevDiceKey = "";
+let isRollingAnim = false;
 
 const toArr = (v) => (Array.isArray(v) ? v : v ? Object.values(v) : []);
 
@@ -50,6 +54,9 @@ export function initClovece() {
         latestData = data;
 
         if (!data || data.status === "waiting") {
+            prevPieces = null;
+            prevDiceKey = "";
+            isRollingAnim = false;
             renderWaiting(container);
             return;
         }
@@ -121,6 +128,35 @@ function startNewGame() {
 }
 
 function rollDice() {
+    if (isRollingAnim || !latestData || latestData.status !== "playing" || latestData.turnPhase !== "roll") return;
+    const players = toArr(latestData.players);
+    const currIdx = latestData.currentTurnIndex || 0;
+    const currentPlayer = players[currIdx];
+    if (!currentPlayer || currentPlayer.name !== state.myName) return;
+
+    isRollingAnim = true;
+    const rollBtn = document.getElementById("btnLudoRoll");
+    if (rollBtn) rollBtn.disabled = true;
+
+    const diceBox = document.querySelector(".ludo-dice-box");
+    const diceFaceEl = document.querySelector(".ludo-dice-face");
+    if (diceBox) diceBox.classList.add("dice-tumble");
+
+    let ticks = 0;
+    const spinTimer = setInterval(() => {
+        ticks += 1;
+        if (diceFaceEl) {
+            diceFaceEl.textContent = DICE_FACES[Math.floor(Math.random() * 6) + 1];
+        }
+        if (ticks >= 5) {
+            clearInterval(spinTimer);
+            isRollingAnim = false;
+            commitDiceRoll();
+        }
+    }, 65);
+}
+
+function commitDiceRoll() {
     if (!latestData || latestData.status !== "playing" || latestData.turnPhase !== "roll") return;
     const players = toArr(latestData.players);
     const currIdx = latestData.currentTurnIndex || 0;
@@ -261,7 +297,55 @@ function getCoordKey(r, c) {
     return `${r}_${c}`;
 }
 
-function buildBoardHtml(data, validMoves, isMyTurn) {
+function getProgressCoord(colorIdx, prog, pieceIdx) {
+    if (prog === -1) return BASES[colorIdx]?.[pieceIdx] || null;
+    if (prog >= 0 && prog <= 39) return TRACK[(START_OFFSET[colorIdx] + prog) % 40];
+    if (prog >= 40 && prog <= 43) return HOME_LANES[colorIdx]?.[prog - 40] || null;
+    return null;
+}
+
+function detectAnimations(data) {
+    const players = toArr(data.players);
+    let movedPiece = null;
+    let kickedPiece = null;
+    const trailSteps = new Map();
+
+    if (prevPieces) {
+        for (const player of players) {
+            const oldArr = toArr(prevPieces[player.name]);
+            const newArr = toArr(data.pieces?.[player.name]);
+            for (let i = 0; i < newArr.length; i++) {
+                const oldP = oldArr[i];
+                const newP = newArr[i];
+                if (oldP === undefined || oldP === newP) continue;
+
+                if (oldP >= 0 && newP === -1) {
+                    kickedPiece = { playerName: player.name, pieceIdx: i };
+                } else if (newP > oldP) {
+                    movedPiece = { playerName: player.name, pieceIdx: i, fromProg: oldP, toProg: newP };
+                    const startStep = oldP === -1 ? 0 : oldP + 1;
+                    let stepNum = 1;
+                    for (let p = startStep; p <= newP; p++) {
+                        const coord = getProgressCoord(player.colorIdx, p, i);
+                        if (coord) {
+                            trailSteps.set(getCoordKey(coord[0], coord[1]), stepNum++);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    const snapshotPieces = {};
+    for (const player of players) {
+        snapshotPieces[player.name] = [...toArr(data.pieces?.[player.name])];
+    }
+    prevPieces = snapshotPieces;
+
+    return { movedPiece, kickedPiece, trailSteps };
+}
+
+function buildBoardHtml(data, validMoves, isMyTurn, animInfo = null) {
     const players = toArr(data.players);
     const cellMeta = new Map();
 
@@ -278,8 +362,8 @@ function buildBoardHtml(data, validMoves, isMyTurn) {
 
     // Domečky (cílové dráhy)
     HOME_LANES.forEach((lane, colorIdx) => {
-        lane.forEach(([r, c]) => {
-            cellMeta.set(getCoordKey(r, c), { type: "home", colorIdx });
+        lane.forEach(([r, c], slotIdx) => {
+            cellMeta.set(getCoordKey(r, c), { type: "home", colorIdx, slotIdx });
         });
     });
 
@@ -295,15 +379,7 @@ function buildBoardHtml(data, validMoves, isMyTurn) {
     players.forEach(player => {
         const pArr = toArr(data.pieces?.[player.name]);
         pArr.forEach((prog, pieceIdx) => {
-            let coord = null;
-            if (prog === -1) {
-                coord = BASES[player.colorIdx]?.[pieceIdx];
-            } else if (prog >= 0 && prog <= 39) {
-                const trackIdx = (START_OFFSET[player.colorIdx] + prog) % 40;
-                coord = TRACK[trackIdx];
-            } else if (prog >= 40 && prog <= 43) {
-                coord = HOME_LANES[player.colorIdx]?.[prog - 40];
-            }
+            const coord = getProgressCoord(player.colorIdx, prog, pieceIdx);
             if (coord) {
                 const key = getCoordKey(coord[0], coord[1]);
                 if (!piecesAtCoord.has(key)) piecesAtCoord.set(key, []);
@@ -315,6 +391,18 @@ function buildBoardHtml(data, validMoves, isMyTurn) {
             }
         });
     });
+
+    const trailSteps = animInfo?.trailSteps || new Map();
+    const movedPiece = animInfo?.movedPiece || null;
+    const kickedPiece = animInfo?.kickedPiece || null;
+    let landedKey = "";
+    if (movedPiece) {
+        const mp = players.find(p => p.name === movedPiece.playerName);
+        if (mp) {
+            const c = getProgressCoord(mp.colorIdx, movedPiece.toProg, movedPiece.pieceIdx);
+            if (c) landedKey = getCoordKey(c[0], c[1]);
+        }
+    }
 
     let cellsHtml = "";
     for (let r = 0; r < 11; r++) {
@@ -332,12 +420,23 @@ function buildBoardHtml(data, validMoves, isMyTurn) {
                     cellClass = "ludo-cell ludo-track";
                 } else if (meta.type === "start") {
                     cellClass = `ludo-cell ludo-track ludo-start-${COLORS[meta.colorIdx].key}`;
-                    inner = `<span class="ludo-start-star">★</span>`;
+                    inner = `<span class="ludo-start-arrow">${START_ARROWS[meta.colorIdx]}</span>`;
                 } else if (meta.type === "home") {
                     cellClass = `ludo-cell ludo-home-${COLORS[meta.colorIdx].key}`;
+                    inner = `<span class="ludo-home-num">${meta.slotIdx + 1}</span>`;
                 } else if (meta.type === "base") {
                     cellClass = `ludo-cell ludo-base-${COLORS[meta.colorIdx].key}`;
                 }
+            }
+
+            const stepNum = trailSteps.get(key);
+            let cellStyle = "";
+            if (stepNum) {
+                cellClass += " cell-trail";
+                cellStyle = ` style="--step:${stepNum}"`;
+            }
+            if (key === landedKey) {
+                cellClass += " cell-landed";
             }
 
             const occupants = piecesAtCoord.get(key) || [];
@@ -345,14 +444,18 @@ function buildBoardHtml(data, validMoves, isMyTurn) {
                 inner = occupants.map(occ => {
                     const colorKey = COLORS[occ.colorIdx].key;
                     const canMove = isMyTurn && occ.playerName === state.myName && data.turnPhase === "move" && validMoves.includes(occ.pieceIdx);
+                    const isHop = movedPiece && movedPiece.playerName === occ.playerName && movedPiece.pieceIdx === occ.pieceIdx;
+                    const isKicked = kickedPiece && kickedPiece.playerName === occ.playerName && kickedPiece.pieceIdx === occ.pieceIdx;
+                    const extraCls = `${isHop ? " piece-hop" : ""}${isKicked ? " piece-kicked-anim" : ""}`;
+
                     if (canMove) {
-                        return `<button class="ludo-piece piece-${colorKey} movable" data-piece-idx="${occ.pieceIdx}" title="Posunout figurku">${occ.pieceIdx + 1}</button>`;
+                        return `<button class="ludo-piece piece-${colorKey} movable${extraCls}" data-piece-idx="${occ.pieceIdx}" title="Posunout figurku">${occ.pieceIdx + 1}</button>`;
                     }
-                    return `<div class="ludo-piece piece-${colorKey}">${occ.pieceIdx + 1}</div>`;
+                    return `<div class="ludo-piece piece-${colorKey}${extraCls}">${occ.pieceIdx + 1}</div>`;
                 }).join("");
             }
 
-            cellsHtml += `<div class="${cellClass}">${inner}</div>`;
+            cellsHtml += `<div class="${cellClass}"${cellStyle}>${inner}</div>`;
         }
     }
 
@@ -401,9 +504,15 @@ function renderPlaying(container, data) {
         `;
     }).join("");
 
-    const boardHtml = buildBoardHtml(data, validMoves, isMyTurn);
+    const animInfo = detectAnimations(data);
+    const boardHtml = buildBoardHtml(data, validMoves, isMyTurn, animInfo);
 
     const diceValue = data.dice;
+    const diceKey = `${currIdx}_${data.turnPhase}_${diceValue}_${data.rollsLeft}`;
+    const shouldAnimateDice = diceValue && diceKey !== prevDiceKey;
+    prevDiceKey = diceKey;
+
+    const diceBoxClass = `ludo-dice-box${shouldAnimateDice ? " dice-rolling-anim" : ""}${diceValue === 6 ? " dice-six" : ""}`;
     const diceHtml = diceValue
         ? `<div class="ludo-dice-face">${DICE_FACES[diceValue]}</div><div style="font-size: 0.95rem; font-weight: 800;">Padla: ${diceValue}</div>`
         : `<div class="ludo-dice-face">🎲</div><div style="font-size: 0.85rem; color: #9ca3af;">Hoď kostkou</div>`;
@@ -447,7 +556,7 @@ function renderPlaying(container, data) {
             ${boardHtml}
 
             <div class="ludo-controls-row">
-                <div class="ludo-dice-box">${diceHtml}</div>
+                <div class="${diceBoxClass}">${diceHtml}</div>
                 <div style="flex: 1;">${actionAreaHtml}</div>
             </div>
 
