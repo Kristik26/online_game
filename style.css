@@ -690,3 +690,522 @@ input[type="range"].party-slider::-moz-range-thumb {
     border-radius: 10px;
     text-align: left;
 }
+
+/* --- SPOLEČNÉ STYLY PRO KARETNÍ A DESKOVÉ HRY --- */
+.game-wide-box {
+    width: 100%;
+    max-width: 520px;
+    padding: 14px;
+    border-radius: 20px;
+}
+
+.card-players-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.card-player-chip {
+    background: #1e1e22;
+    border: 2px solid #2c2c30;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.card-player-chip.active-turn {
+    border-color: #fbbf24;
+    background: rgba(251, 191, 36, 0.16);
+    font-weight: 800;
+}
+
+.card-count-badge {
+    background: #27272a;
+    padding: 2px 7px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+}
+
+.host-mini-controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 14px;
+}
+
+/* --- STYLY PRO HRU PRŠÍ --- */
+.prsi-action-ticker {
+    background: #1e1e22;
+    border: 1px solid #2c2c30;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: #e5e7eb;
+    margin-bottom: 10px;
+}
+
+.prsi-alert-banner {
+    background: rgba(220, 38, 38, 0.2);
+    border: 2px solid #ef4444;
+    color: #fecaca;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.prsi-table-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 18px;
+    margin: 14px 0;
+}
+
+.prsi-pile-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.prsi-draw-pile {
+    width: 96px;
+    height: 128px;
+    padding: 10px;
+    margin: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+    border: 3px solid #60a5fa;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+}
+
+.prsi-draw-pile.penalty-btn {
+    background: linear-gradient(135deg, #991b1b, #dc2626);
+    border-color: #fca5a5;
+}
+
+.prsi-draw-pile:disabled {
+    opacity: 0.55;
+    cursor: default;
+}
+
+.prsi-card {
+    width: 72px;
+    height: 104px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 3px solid #d1d5db;
+    padding: 6px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.45);
+}
+
+.prsi-top-card {
+    width: 90px;
+    height: 128px;
+    padding: 10px;
+}
+
+.prsi-card.card-red { color: #dc2626; }
+.prsi-card.card-black { color: #111827; }
+
+.prsi-card-rank {
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.prsi-card-suit {
+    font-size: 1.9rem;
+    line-height: 1;
+}
+
+.prsi-card.playable {
+    border-color: #22c55e;
+    box-shadow: 0 0 14px rgba(34, 197, 94, 0.55);
+    transform: translateY(-4px);
+}
+
+.prsi-card.unplayable {
+    opacity: 0.48;
+    cursor: default;
+}
+
+.prsi-active-suit-badge {
+    background: #1e1e22;
+    border: 1px solid #3f3f46;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+}
+
+.suit-text-red { color: #f87171; font-weight: 800; }
+.suit-text-light { color: #f3f4f6; font-weight: 800; }
+
+.prsi-suit-picker {
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid #fbbf24;
+    border-radius: 16px;
+    padding: 12px;
+    margin: 10px 0;
+}
+
+.prsi-suit-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.prsi-suit-btn {
+    margin: 0;
+    padding: 14px 10px;
+    font-size: 1.05rem;
+    border-radius: 12px;
+    background: #ffffff;
+}
+
+.prsi-suit-btn.suit-red { color: #dc2626; }
+.prsi-suit-btn.suit-black { color: #111827; }
+
+.prsi-turn-status {
+    background: #1e1e22;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    margin: 10px 0;
+    border: 1px solid #2c2c30;
+}
+
+.prsi-turn-status.my-turn-banner {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.14);
+    font-weight: 700;
+}
+
+.prsi-hand-area {
+    background: rgba(0, 0, 0, 0.28);
+    padding: 12px;
+    border-radius: 16px;
+    margin-top: 8px;
+}
+
+.prsi-hand-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+/* --- STYLY PRO HRU ŽOLÍK --- */
+.zolik-discard-btn {
+    width: auto;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.zolik-discard-btn:disabled {
+    opacity: 0.85;
+    cursor: default;
+}
+
+.zolik-card {
+    width: 62px;
+    height: 92px;
+    background: #ffffff;
+    border-radius: 10px;
+    border: 2px solid #d1d5db;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    position: relative;
+}
+
+.zolik-card.mini {
+    width: 40px;
+    height: 58px;
+    padding: 3px;
+    border-radius: 7px;
+}
+
+.zolik-card.mini .zolik-card-rank { font-size: 0.85rem; }
+.zolik-card.mini .zolik-card-suit { font-size: 1rem; }
+
+.zolik-card.card-red { color: #dc2626; }
+.zolik-card.card-black { color: #111827; }
+.zolik-card.card-joker {
+    background: linear-gradient(135deg, #fef08a, #fde047);
+    color: #111827;
+    border-color: #eab308;
+}
+.zolik-card.empty {
+    background: #1e1e22;
+    color: #6b7280;
+    border: 2px dashed #3f3f46;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.zolik-card.selected {
+    border: 3px solid #22c55e;
+    box-shadow: 0 0 14px rgba(34, 197, 94, 0.75);
+}
+
+.zolik-card-rank {
+    font-size: 1.1rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.zolik-card-suit {
+    font-size: 1.45rem;
+    line-height: 1;
+}
+
+.zolik-joker-rep {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 0.55rem;
+    padding: 1px 3px;
+    border-radius: 4px;
+    font-weight: 800;
+}
+
+.zolik-table-melds {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid #2c2c30;
+    border-radius: 14px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.zolik-melds-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.zolik-meld-group {
+    background: #1e1e22;
+    padding: 6px;
+    border-radius: 10px;
+    border: 1px solid #3f3f46;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    align-items: center;
+}
+
+.btn-meld-action {
+    width: auto;
+    margin: 0 0 0 4px;
+    padding: 6px 8px;
+    font-size: 0.75rem;
+    border-radius: 8px;
+    background: #0d9488;
+    color: #ffffff;
+}
+
+.btn-meld-action.swap {
+    background: #eab308;
+    color: #000000;
+}
+
+.zolik-staging-box {
+    background: rgba(13, 148, 136, 0.16);
+    border: 2px solid #14b8a6;
+    border-radius: 14px;
+    padding: 10px;
+    margin: 10px 0;
+}
+
+.zolik-action-bar {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin: 8px 0;
+}
+
+.zolik-action-bar button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+.zolik-hand-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #9ca3af;
+    margin-bottom: 8px;
+}
+
+.btn-sort {
+    width: auto;
+    margin: 0;
+    padding: 5px 9px;
+    font-size: 0.75rem;
+    border-radius: 8px;
+    background: #27272a;
+    color: #d1d5db;
+    border: 1px solid #3f3f46;
+}
+
+.btn-sort.active {
+    background: #3b82f6;
+    color: #ffffff;
+    border-color: #60a5fa;
+}
+
+.zolik-hand-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+}
+
+.zolik-hand-btn {
+    width: auto;
+    max-width: none;
+    padding: 0;
+    margin: 0;
+    background: transparent;
+    border-radius: 10px;
+    transition: transform 0.1s;
+}
+
+.zolik-hand-btn.selected {
+    transform: translateY(-6px);
+}
+
+/* --- STYLY PRO HRU ČLOVĚČE, NEZLOB SE --- */
+.ludo-board {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 2px;
+    width: 100%;
+    max-width: 390px;
+    aspect-ratio: 1 / 1;
+    margin: 10px auto;
+    background: #18181b;
+    padding: 6px;
+    border-radius: 16px;
+    border: 2px solid #2c2c30;
+}
+
+.ludo-cell {
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    font-size: 0.85rem;
+    overflow: hidden;
+}
+
+.ludo-empty { background: transparent; }
+.ludo-track { background: #e5e7eb; color: #111827; }
+.ludo-center { background: #27272a; border: 1px solid #fbbf24; font-size: 1rem; }
+
+.ludo-start-red { background: #fca5a5; border: 2px solid #ef4444; }
+.ludo-start-blue { background: #93c5fd; border: 2px solid #3b82f6; }
+.ludo-start-green { background: #86efac; border: 2px solid #22c55e; }
+.ludo-start-yellow { background: #fde047; border: 2px solid #eab308; }
+
+.ludo-start-star {
+    font-size: 0.7rem;
+    opacity: 0.65;
+    pointer-events: none;
+}
+
+.ludo-home-red { background: rgba(239, 68, 68, 0.35); border: 1px solid #ef4444; }
+.ludo-home-blue { background: rgba(59, 130, 246, 0.35); border: 1px solid #3b82f6; }
+.ludo-home-green { background: rgba(34, 197, 94, 0.35); border: 1px solid #22c55e; }
+.ludo-home-yellow { background: rgba(234, 179, 8, 0.35); border: 1px solid #eab308; }
+
+.ludo-base-red { background: rgba(239, 68, 68, 0.2); border: 1px dashed #ef4444; }
+.ludo-base-blue { background: rgba(59, 130, 246, 0.2); border: 1px dashed #3b82f6; }
+.ludo-base-green { background: rgba(34, 197, 94, 0.2); border: 1px dashed #22c55e; }
+.ludo-base-yellow { background: rgba(234, 179, 8, 0.2); border: 1px dashed #eab308; }
+
+.ludo-piece {
+    width: 82%;
+    height: 82%;
+    padding: 0;
+    margin: 0;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    font-size: 0.68rem;
+    font-weight: 900;
+    color: #ffffff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    z-index: 2;
+}
+
+.piece-red { background: #dc2626; }
+.piece-blue { background: #2563eb; }
+.piece-green { background: #16a34a; }
+.piece-yellow { background: #ca8a04; color: #000000; border-color: #111827; }
+
+.ludo-piece.movable {
+    cursor: pointer;
+    animation: ludoPulse 0.7s infinite alternate;
+    box-shadow: 0 0 12px #ffffff;
+    z-index: 5;
+}
+
+@keyframes ludoPulse {
+    from { transform: scale(1); }
+    to { transform: scale(1.18); }
+}
+
+.ludo-controls-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.ludo-dice-box {
+    background: #1e1e22;
+    border: 2px solid #3f3f46;
+    border-radius: 14px;
+    padding: 8px 12px;
+    min-width: 92px;
+}
+
+.ludo-dice-face {
+    font-size: 2.2rem;
+    line-height: 1.1;
+}

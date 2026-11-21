@@ -1,5 +1,5 @@
-import { db, ref, set, onValue, update } from "../firebase-config.js?v=7";
-import { state } from "../app.js?v=7";
+import { db, ref, set, onValue, update } from "../firebase-config.js?v=8";
+import { state } from "../app.js?v=8";
 
 // Databáze absurdních párty dilemat [Možnost A, Možnost B]
 const DILEMMAS = [
