@@ -1,5 +1,5 @@
-import { db, ref, set, onValue, update } from "../firebase-config.js?v=12";
-import { state } from "../app.js?v=12";
+import { db, ref, set, onValue, update } from "../firebase-config.js?v=13";
+import { state } from "../app.js?v=13";
 
 const SUITS = {
     H: { key: "H", symbol: "♥️", color: "red", order: 0 },

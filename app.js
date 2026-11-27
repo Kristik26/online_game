@@ -1,12 +1,13 @@
-import { db, ref, set, get, onValue, update, onDisconnect, remove } from "./firebase-config.js?v=12";
-import { initBomba } from "./games/bomba.js?v=12";
-import { initSlider } from "./games/slider.js?v=12";
-import { initVyzyvatel } from "./games/vyzyvatel.js?v=12";
-import { initDilema } from "./games/dilema.js?v=12";
-import { initKralove } from "./games/kralove.js?v=12";
-import { initPrsi } from "./games/prsi.js?v=12";
-import { initZolik } from "./games/zolik.js?v=12";
-import { initClovece } from "./games/clovece.js?v=12";
+import { db, ref, set, get, onValue, update, onDisconnect, remove } from "./firebase-config.js?v=13";
+import { initBomba } from "./games/bomba.js?v=13";
+import { initSlider } from "./games/slider.js?v=13";
+import { initVyzyvatel } from "./games/vyzyvatel.js?v=13";
+import { initDilema } from "./games/dilema.js?v=13";
+import { initKralove } from "./games/kralove.js?v=13";
+import { initPrsi } from "./games/prsi.js?v=13";
+import { initZolik } from "./games/zolik.js?v=13";
+import { initClovece } from "./games/clovece.js?v=13";
+import { initKostky } from "./games/kostky.js?v=13";
 
 // Globální stav hráče
 export const state = {
@@ -124,6 +125,7 @@ function setupUI() {
     initPrsi();
     initZolik();
     initClovece();
+    initKostky();
 }
 
 function startListeners() {
